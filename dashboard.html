@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Find a worker — SahayakSetu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="css/style.css"/>
+<script src="js/tailwind-config.js"></script>
+<script src="js/theme.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600&amp;family=Karla:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+</head>
+<body class="text-on-surface flex min-h-screen">
+
+<!-- ============================== Side rail =============================
+     A rail, not a floating panel: white, one hairline down its right edge,
+     no shadow. It was 256px wide with a 32px blue drop shadow. -->
+<aside class="hidden md:flex flex-col w-[232px] fixed left-0 top-0 h-full bg-surface-container-lowest border-r border-outline-variant z-40">
+<a class="no-underline block px-5 pt-6 pb-5" href="landing.html">
+<span class="font-headline-lg text-[19px] leading-none text-primary block">SahayakSetu</span>
+<span class="eyebrow block mt-1.5">Worker register</span>
+</a>
+<!-- Filled in by js/nav.js based on who is signed in. -->
+<nav class="flex-1 pt-1" data-nav="side"></nav>
+<div class="px-5 pb-4">
+<button class="btn btn-primary w-full" id="book-service" type="button">Book a service</button>
+</div>
+<div class="flex items-center gap-3 px-5 py-4 border-t border-outline-variant" data-nav="user"></div>
+</aside>
+
+<!-- ============================ Main column ============================= -->
+<main class="flex-1 md:ml-[232px] w-full min-h-screen overflow-x-hidden pb-24 md:pb-10">
+
+<!-- Mobile masthead -->
+<div class="md:hidden masthead sticky top-0 z-30 flex items-center justify-between gap-3 px-margin-mobile h-[56px]">
+<a class="no-underline font-headline-lg-mobile text-primary" href="landing.html">SahayakSetu</a>
+<button aria-label="Open filters" class="btn btn-secondary btn-sm" onclick="toggleFilters()">
+<span aria-hidden="true" class="material-symbols-outlined text-[18px]">tune</span>
+Filters
+</button>
+</div>
+
+<header class="px-margin-mobile md:px-margin-desktop pt-8 md:pt-10 pb-6 border-b border-outline-variant flex flex-wrap justify-between items-start gap-4">
+<div class="min-w-0">
+<p class="eyebrow mb-2">Find a worker</p>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Welcome back, <span data-nav-text="name">Guest</span>.</h2>
+
+<!-- Search is the primary control on this page, so it sits in the header
+     rather than beside the list heading. -->
+<div class="relative mt-6 w-full max-w-lg">
+<span aria-hidden="true" class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-outline">search</span>
+<input class="w-full h-[44px] pl-10 pr-10 font-body-md text-body-md" id="worker-search" placeholder="Search by name or trade" type="search"/>
+<button class="hidden absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-outline hover:text-on-surface rounded" id="clear-search" title="Clear search" type="button">
+<span aria-hidden="true" class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- js/theme.js appends the light/dark switch to this row on desktop; on
+     mobile it goes in the bottom bar instead, so this is hidden there. -->
+<div class="hidden md:flex items-center gap-2 flex-shrink-0">
+<button class="btn btn-secondary" onclick="toggleFilters()">
+<span aria-hidden="true" class="material-symbols-outlined text-[18px]">tune</span>
+Filters
+</button>
+</div>
+</header>
+
+<!-- ============================ Trade filter ============================
+     Six tiles with coloured icon circles became one row of toggles. The
+     counts are real and come from /api/services. -->
+<section class="px-margin-mobile md:px-margin-desktop pt-6" id="services">
+<div class="flex items-baseline justify-between gap-4 mb-3">
+<p class="eyebrow">Filter by trade</p>
+<button class="btn btn-quiet btn-sm" id="view-all-services" type="button">Show every trade</button>
+</div>
+<div class="flex flex-wrap gap-2" id="service-categories">
+<span class="shimmer" style="width:112px;height:34px"></span>
+<span class="shimmer" style="width:96px;height:34px"></span>
+<span class="shimmer" style="width:104px;height:34px"></span>
+<span class="shimmer" style="width:92px;height:34px"></span>
+</div>
+</section>
+
+<!-- ============================ Worker list ============================= -->
+<section class="px-margin-mobile md:px-margin-desktop pt-8" id="workers">
+<div class="rule-heading mb-4">
+<h3 class="font-title-md text-title-md text-on-surface" id="workers-heading">Workers near you</h3>
+</div>
+
+<!-- Loading state. Replaced by #worker-cards once the list arrives. -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-gutter" id="worker-skeletons">
+<div class="panel-flat p-5">
+<div class="flex items-start gap-4">
+<span class="shimmer" style="width:40px;height:40px"></span>
+<div class="flex-1">
+<span class="shimmer" style="display:block;width:70%;height:15px"></span>
+<span class="shimmer" style="display:block;width:45%;height:12px;margin-top:8px"></span>
+</div>
+</div>
+<span class="shimmer" style="display:block;width:100%;height:1px;margin:18px 0"></span>
+<span class="shimmer" style="display:block;width:55%;height:12px"></span>
+<span class="shimmer" style="display:block;width:100%;height:32px;margin-top:18px"></span>
+</div>
+<div class="panel-flat p-5 hidden sm:block">
+<div class="flex items-start gap-4">
+<span class="shimmer" style="width:40px;height:40px"></span>
+<div class="flex-1">
+<span class="shimmer" style="display:block;width:64%;height:15px"></span>
+<span class="shimmer" style="display:block;width:50%;height:12px;margin-top:8px"></span>
+</div>
+</div>
+<span class="shimmer" style="display:block;width:100%;height:1px;margin:18px 0"></span>
+<span class="shimmer" style="display:block;width:48%;height:12px"></span>
+<span class="shimmer" style="display:block;width:100%;height:32px;margin-top:18px"></span>
+</div>
+<div class="panel-flat p-5 hidden xl:block">
+<div class="flex items-start gap-4">
+<span class="shimmer" style="width:40px;height:40px"></span>
+<div class="flex-1">
+<span class="shimmer" style="display:block;width:74%;height:15px"></span>
+<span class="shimmer" style="display:block;width:42%;height:12px;margin-top:8px"></span>
+</div>
+</div>
+<span class="shimmer" style="display:block;width:100%;height:1px;margin:18px 0"></span>
+<span class="shimmer" style="display:block;width:60%;height:12px"></span>
+<span class="shimmer" style="display:block;width:100%;height:32px;margin-top:18px"></span>
+</div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-gutter hidden" id="worker-cards"></div>
+</section>
+</main>
+
+<!-- =========================== Filter drawer ============================ -->
+<div class="fixed inset-0 bg-inverse-surface/40 z-50" id="drawerOverlay" onclick="toggleFilters()"></div>
+<aside class="fixed top-0 right-0 h-full w-full max-w-[400px] bg-surface-container-lowest border-l border-outline-variant z-50 flex flex-col" id="filterDrawer">
+<div class="px-md py-4 border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-title-md text-title-md text-on-surface">Narrow the list</h2>
+<button aria-label="Close filters" class="theme-toggle" onclick="toggleFilters()">
+<span aria-hidden="true" class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+
+<div class="px-md py-6 overflow-y-auto flex-1">
+<div class="pb-6 border-b border-outline-variant">
+<p class="eyebrow mb-3">Trade</p>
+<div class="space-y-1.5" id="filter-categories"></div>
+</div>
+
+<div class="py-6 border-b border-outline-variant">
+<p class="eyebrow mb-3">Minimum rating</p>
+<div class="flex gap-2" id="filter-rating">
+<button aria-pressed="true" class="chip flex-1 justify-center" data-rating="0" type="button">Any</button>
+<button aria-pressed="false" class="chip flex-1 justify-center" data-rating="4.0" type="button">4.0 and up</button>
+<button aria-pressed="false" class="chip flex-1 justify-center" data-rating="4.5" type="button">4.5 and up</button>
+</div>
+</div>
+
+<div class="py-6 border-b border-outline-variant">
+<div class="flex items-baseline justify-between gap-4 mb-3">
+<p class="eyebrow">Starting price, at most</p>
+<span class="figure text-[15px] money" id="filter-price-label">₹2000+</span>
+</div>
+<input class="w-full h-1.5 bg-surface-variant rounded appearance-none cursor-pointer accent-primary" id="filter-price" max="2000" min="100" step="50" type="range" value="2000"/>
+<div class="flex justify-between mt-2 font-label-sm text-label-sm text-outline normal-case tracking-normal">
+<span>₹100</span>
+<span>₹2000+</span>
+</div>
+</div>
+
+<div class="pt-6">
+<label class="flex items-center gap-3 cursor-pointer">
+<input checked="" class="form-checkbox h-[18px] w-[18px] text-primary rounded-sm border-outline focus:ring-primary focus:ring-offset-0" id="filter-available" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface">Only workers free right now</span>
+</label>
+</div>
+</div>
+
+<div class="px-md py-4 border-t border-outline-variant flex gap-3">
+<button class="btn btn-secondary flex-1" id="filter-reset" type="button">Reset</button>
+<button class="btn btn-primary flex-[2]" id="filter-apply" type="button">Show results</button>
+</div>
+</aside>
+
+<!-- Mobile bottom bar — filled in by js/nav.js -->
+<nav class="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center gap-1 px-2 py-2 md:hidden bg-surface-container-lowest border-t border-outline-variant" data-nav="bottom"></nav>
+
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/chat-widget.js"></script>
+</body></html>

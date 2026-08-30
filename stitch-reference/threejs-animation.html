@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_1 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_1" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_1');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const width = container.clientWidth || window.innerWidth;
+const height = container.clientHeight || window.innerHeight;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+renderer.setSize(width, height);
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
+
+// Create a stylized 3D representation of cooperation/service (connected spheres)
+const group = new THREE.Group();
+const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+const material = new THREE.MeshPhongMaterial({ 
+    color: 0x0078FF, 
+    shininess: 100,
+    transparent: true,
+    opacity: 0.9
+});
+
+for(let i = 0; i < 5; i++) {
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(
+        Math.cos(i / 5 * Math.PI * 2) * 2,
+        Math.sin(i / 5 * Math.PI * 2) * 2,
+        0
+    );
+    group.add(sphere);
+    
+    // Connect to center
+    const lineGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0,0,0),
+        sphere.position
+    ]);
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x00D178, transparent: true, opacity: 0.5 });
+    const line = new THREE.Line(lineGeom, lineMat);
+    group.add(line);
+}
+
+const centerSphere = new THREE.Mesh(
+    new THREE.SphereGeometry(0.8, 32, 32),
+    new THREE.MeshPhongMaterial({ color: 0x00D178 })
+);
+group.add(centerSphere);
+
+scene.add(group);
+
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5, 5, 5);
+scene.add(light);
+scene.add(new THREE.AmbientLight(0x404040));
+
+camera.position.z = 8;
+
+function animate() {
+    requestAnimationFrame(animate);
+    group.rotation.y += 0.005;
+    group.rotation.x += 0.002;
+    
+    // Pulse effect
+    const scale = 1 + Math.sin(Date.now() * 0.002) * 0.05;
+    group.scale.set(scale, scale, scale);
+    
+    renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+    const w = container.clientWidth || window.innerWidth;
+    const h = container.clientHeight || window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+});
+
+animate();
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_1 -->
+</body>
+</html>

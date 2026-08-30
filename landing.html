@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SahayakSetu — Trusted Cooperative Workers</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="css/style.css"/>
+<script src="js/tailwind-config.js"></script>
+<script src="js/theme.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600&amp;family=Karla:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+</head>
+<body class="bg-background text-on-background antialiased overflow-x-hidden">
+
+<!-- ============================== Masthead ==============================
+     Flat, one hairline, no blur and no drop shadow. The wordmark sits on the
+     same baseline as a plain-language description of what this actually is. -->
+<header class="masthead sticky top-0 w-full z-50">
+<div class="hidden md:flex justify-between items-center gap-10 h-[64px] px-margin-desktop max-w-[1180px] mx-auto">
+<a class="no-underline flex items-baseline gap-3 flex-shrink-0" href="landing.html">
+<span class="font-headline-lg text-[21px] leading-none text-primary">SahayakSetu</span>
+<span class="eyebrow hidden lg:inline">Worker cooperative</span>
+</a>
+<nav class="flex gap-7 items-center">
+<a aria-current="page" class="font-label-md text-label-md text-on-surface border-b-2 border-primary pb-0.5" href="#top">Home</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#rates">Rates</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#how-it-works">How it works</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="dashboard.html">Browse workers</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-nav-when="signed-in" href="account.html">My account</a>
+</nav>
+<div class="flex gap-2 items-center flex-shrink-0">
+<a class="btn btn-secondary btn-sm" data-nav-when="signed-out" href="login.html">Log in</a>
+<span class="font-label-sm text-label-sm text-outline normal-case tracking-normal hidden lg:inline" data-nav-text="name" data-nav-when="signed-in"></span>
+<button class="nav-logout btn btn-quiet btn-sm" data-nav-when="signed-in" title="Log out" type="button">Log out</button>
+</div>
+</div>
+<!-- Mobile masthead: wordmark plus the one action worth a tap up here. -->
+<div class="flex justify-between items-center gap-4 px-margin-mobile h-[56px] w-full md:hidden">
+<a class="no-underline font-headline-lg-mobile text-primary" href="landing.html">SahayakSetu</a>
+<div class="flex gap-2 items-center">
+<a class="btn btn-secondary btn-sm" data-nav-when="signed-out" href="login.html">Log in</a>
+<a class="btn btn-secondary btn-sm" data-nav-when="signed-in" href="account.html">Account</a>
+</div>
+</div>
+</header>
+
+<main>
+
+<!-- ================================ Hero ================================
+     Two unequal columns. The left one states the offer; the right one is the
+     rate board — the actual thing people came for, priced, from the database.
+     What used to be here: a full-screen WebGL gradient, a rotating Three.js
+     sphere cluster and a 921px-tall empty stage. -->
+<section class="bg-surface-container-low border-b border-outline-variant" id="top">
+<div class="max-w-[1180px] mx-auto px-margin-mobile md:px-margin-desktop grid lg:grid-cols-12 gap-10 lg:gap-16 pt-10 pb-12 lg:pt-20 lg:pb-24">
+
+<div class="lg:col-span-7 lg:pt-3">
+<p class="eyebrow mb-4">Cooperative-owned &middot; No middleman</p>
+<h1 class="font-display-lg text-display-lg text-on-surface max-w-[19ch]">
+Book <span class="text-primary">trusted</span> cooperative workers, instantly.
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-5 max-w-[54ch]">
+Verified workers for reliable local services — fair opportunities for the people doing the work, and a price you agree to before anyone turns up.
+</p>
+
+<!-- Search: a real field and a real button, sharing one edge. -->
+<div class="mt-8 flex flex-col sm:flex-row items-stretch gap-2 max-w-xl">
+<div class="relative flex-1">
+<span aria-hidden="true" class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-outline">search</span>
+<input class="w-full h-[46px] pl-10 pr-3 font-body-md text-body-md" id="hero-search" placeholder="Electrician, plumber, cleaner…" type="search"/>
+</div>
+<button class="btn btn-primary btn-lg flex-shrink-0" id="find-worker-button" type="button">Find a worker</button>
+</div>
+
+<!-- Plain-text facts. These were three overlapping avatar circles and a row
+     of pill-shaped chips saying much the same thing. -->
+<dl class="mt-8 flex flex-wrap gap-x-10 gap-y-4 border-t border-outline-variant pt-6 max-w-xl">
+<div>
+<dt class="eyebrow">Workers</dt>
+<dd class="font-body-md text-body-md text-on-surface mt-1">Identity checked and rated</dd>
+</div>
+<div>
+<dt class="eyebrow">Pricing</dt>
+<dd class="font-body-md text-body-md text-on-surface mt-1">Shown before you book</dd>
+</div>
+<div>
+<dt class="eyebrow">Ownership</dt>
+<dd class="font-body-md text-body-md text-on-surface mt-1">The cooperative, not a broker</dd>
+</div>
+</dl>
+</div>
+
+<!-- The rate board. Prices and worker counts are filled in from the API by
+     js/landing.js; picking a line filters the roster below. -->
+<div class="lg:col-span-5" id="rates">
+<div class="rateboard">
+<div class="rateboard-head">
+<div>
+<p class="eyebrow">Starting rates</p>
+<p class="font-title-md text-title-md text-white mt-0.5">Pick a trade</p>
+</div>
+<p class="font-label-sm text-label-sm text-white/55 normal-case tracking-normal text-right">per visit,<br/>before parts</p>
+</div>
+
+<div id="rate-rows">
+<button aria-pressed="false" class="service-card rate-row" data-service="Electrician" type="button">
+<span class="rate-row-line">
+<span class="rate-row-name">Electrician</span>
+<span aria-hidden="true" class="rate-row-lead"></span>
+<span class="rate-row-price" data-rate-price="Electrician">&mdash;</span>
+</span>
+<span class="rate-row-meta">Safe electrical repairs and installations<span data-rate-count="Electrician"></span></span>
+</button>
+<button aria-pressed="false" class="service-card rate-row" data-service="Plumber" type="button">
+<span class="rate-row-line">
+<span class="rate-row-name">Plumber</span>
+<span aria-hidden="true" class="rate-row-lead"></span>
+<span class="rate-row-price" data-rate-price="Plumber">&mdash;</span>
+</span>
+<span class="rate-row-meta">Quick help for leaks, fittings and repairs<span data-rate-count="Plumber"></span></span>
+</button>
+<button aria-pressed="false" class="service-card rate-row" data-service="Cleaner" type="button">
+<span class="rate-row-line">
+<span class="rate-row-name">Cleaner</span>
+<span aria-hidden="true" class="rate-row-lead"></span>
+<span class="rate-row-price" data-rate-price="Cleaner">&mdash;</span>
+</span>
+<span class="rate-row-meta">Trusted cleaning for a fresher home<span data-rate-count="Cleaner"></span></span>
+</button>
+<button aria-pressed="false" class="service-card rate-row" data-service="Driver" type="button">
+<span class="rate-row-line">
+<span class="rate-row-name">Driver</span>
+<span aria-hidden="true" class="rate-row-lead"></span>
+<span class="rate-row-price" data-rate-price="Driver">&mdash;</span>
+</span>
+<span class="rate-row-meta">Reliable local rides and travel assistance<span data-rate-count="Driver"></span></span>
+</button>
+<button aria-pressed="false" class="service-card rate-row" data-service="Carpenter" type="button">
+<span class="rate-row-line">
+<span class="rate-row-name">Carpenter</span>
+<span aria-hidden="true" class="rate-row-lead"></span>
+<span class="rate-row-price" data-rate-price="Carpenter">&mdash;</span>
+</span>
+<span class="rate-row-meta">Custom woodwork and dependable repairs<span data-rate-count="Carpenter"></span></span>
+</button>
+<button aria-pressed="false" class="service-card rate-row" data-service="Painter" type="button">
+<span class="rate-row-line">
+<span class="rate-row-name">Painter</span>
+<span aria-hidden="true" class="rate-row-lead"></span>
+<span class="rate-row-price" data-rate-price="Painter">&mdash;</span>
+</span>
+<span class="rate-row-meta">Professional painting for every space<span data-rate-count="Painter"></span></span>
+</button>
+</div>
+
+<div class="border-t border-outline-variant px-md py-3 bg-surface-container-low">
+<p class="font-label-sm text-label-sm text-outline normal-case tracking-normal" id="rate-note">Rates come from the cooperative's register. Workers set their own starting price.</p>
+<div class="hidden mt-3" id="service-actions">
+<button class="btn btn-primary w-full" id="view-workers-button" type="button">View nearby workers</button>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+
+<!-- ============================ Worker roster ===========================
+     Empty until a trade is chosen, and it says so rather than sitting there
+     as six grey placeholder cards. -->
+<section class="py-14 lg:py-16" id="services">
+<div class="max-w-[1180px] mx-auto px-margin-mobile md:px-margin-desktop">
+<div class="rule-heading mb-2">
+<h2 class="font-headline-lg text-headline-lg text-on-surface" id="nearby-workers-title">Workers near you</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[60ch]">Best-rated first. The price shown is each worker's own starting rate; the final quote is confirmed at booking.</p>
+
+<div class="mt-8" id="nearby-workers">
+<div id="worker-list"></div>
+</div>
+
+<p class="font-body-md text-body-md text-on-surface-variant mt-8">
+Looking for something specific? <a href="dashboard.html">Browse the full directory</a> to filter by price, rating and availability.
+</p>
+</div>
+</section>
+
+<!-- ============================ How it works ============================
+     Was three identical circles on a symmetrical connecting line. Now the
+     heading holds the left column and the steps run down the right as a
+     numbered register — numbered because the order genuinely matters. -->
+<section class="bg-surface-container-lowest border-y border-outline-variant py-16 lg:py-20" id="how-it-works">
+<div class="max-w-[1180px] mx-auto px-margin-mobile md:px-margin-desktop grid lg:grid-cols-12 gap-10 lg:gap-16">
+<div class="lg:col-span-4">
+<p class="eyebrow mb-3">Process</p>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">How it works</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-3 max-w-[38ch]">Three steps, and you can see the price at every one of them.</p>
+</div>
+<ol class="lg:col-span-7 lg:col-start-6">
+<li class="flex gap-5 py-5 border-t border-outline-variant">
+<span aria-hidden="true" class="figure text-[15px] text-primary w-6 flex-shrink-0 pt-0.5">1</span>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Choose a service</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 max-w-[52ch]">Browse verified workers and pick the one that fits — rating, distance and starting price are all on the card.</p>
+</div>
+</li>
+<li class="flex gap-5 py-5 border-t border-outline-variant">
+<span aria-hidden="true" class="figure text-[15px] text-primary w-6 flex-shrink-0 pt-0.5">2</span>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Book a slot</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 max-w-[52ch]">Set a date and time. The quote you confirm is the quote the worker sees.</p>
+</div>
+</li>
+<li class="flex gap-5 py-5 border-t border-b border-outline-variant">
+<span aria-hidden="true" class="figure text-[15px] text-primary w-6 flex-shrink-0 pt-0.5">3</span>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Job done, worker paid</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 max-w-[52ch]">The worker completes the task and payment is released. The cooperative takes no cut for introducing you.</p>
+</div>
+</li>
+</ol>
+</div>
+</section>
+
+<!-- ======================== Closing statement =========================
+     One dark band per page, used here instead of the placeholder logo row
+     ("GovTrust / CoopFed / SafeShield") that stood in for partners the
+     cooperative does not actually have. -->
+<section class="band-ink py-14">
+<div class="max-w-[1180px] mx-auto px-margin-mobile md:px-margin-desktop grid lg:grid-cols-12 gap-8 items-end">
+<div class="lg:col-span-7">
+<p class="eyebrow text-white/50 mb-3">Why a cooperative</p>
+<h2 class="font-headline-lg text-headline-lg max-w-[26ch]">The people doing the work own the platform.</h2>
+<p class="font-body-md text-body-md text-white/70 mt-4 max-w-[58ch]">Every rupee above the worker's rate stays in the cooperative and funds verification, training and cover between jobs — instead of a commission.</p>
+</div>
+<div class="lg:col-span-4 lg:col-start-9">
+<a class="btn btn-secondary btn-lg w-full sm:w-auto no-underline" href="dashboard.html">Browse the register</a>
+</div>
+</div>
+</section>
+
+<!-- =============================== Footer =============================== -->
+<footer class="border-t border-outline-variant pt-10 pb-24 md:pb-10">
+<div class="max-w-[1180px] mx-auto px-margin-mobile md:px-margin-desktop grid gap-8 sm:grid-cols-3">
+<div class="sm:col-span-1">
+<p class="font-headline-lg text-[18px] text-primary">SahayakSetu</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-[30ch]">A worker-owned register of verified local trades.</p>
+</div>
+<div>
+<p class="eyebrow mb-3">For customers</p>
+<ul class="space-y-2 font-body-md text-body-md">
+<li><a href="dashboard.html">Browse workers</a></li>
+<li><a href="#how-it-works">How it works</a></li>
+<li><a data-nav-when="signed-in" href="account.html#bookings">My bookings</a></li>
+<li><a data-nav-when="signed-out" href="login.html">Log in or register</a></li>
+</ul>
+</div>
+<div>
+<p class="eyebrow mb-3">For workers</p>
+<ul class="space-y-2 font-body-md text-body-md">
+<li><a data-nav-when="signed-out" href="login.html">Join the cooperative</a></li>
+<li><a data-nav-when="signed-in" href="profile.html">My jobs</a></li>
+<li><a href="#rates">Starting rates</a></li>
+</ul>
+</div>
+</div>
+<div class="max-w-[1180px] mx-auto px-margin-mobile md:px-margin-desktop mt-10 pt-5 border-t border-outline-variant flex flex-wrap gap-2 justify-between">
+<p class="font-label-sm text-label-sm text-outline normal-case tracking-normal">SahayakSetu Federation &middot; <span id="footer-year">2026</span></p>
+<p class="font-label-sm text-label-sm text-outline normal-case tracking-normal">Built for Smart India Hackathon</p>
+</div>
+</footer>
+
+</main>
+
+<!-- Mobile bottom bar — filled in by js/nav.js. Opaque, one top hairline. -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center gap-1 px-2 py-2 md:hidden bg-surface-container-lowest border-t border-outline-variant" data-nav="bottom"></nav>
+
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/landing.js"></script>
+<script src="js/chat-widget.js"></script>
+</body></html>

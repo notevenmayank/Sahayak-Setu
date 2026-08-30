@@ -1,0 +1,923 @@
+/* =========================================================================
+   SahayakSetu — shared stylesheet
+   =========================================================================
+
+   Structure:
+     1. Base            — page ground, focus ring, motion preference
+     2. Surfaces        — panel, ledger, band
+     3. Type            — eyebrow, rule, figures
+     4. Controls        — buttons, inputs, badges, toggles
+     5. Page pieces     — rate board, roster, drawer, booking steps
+     6. Loading + empty — skeleton, states
+     7. Dark theme
+
+   Design rules this file enforces, in response to what the old one did:
+     · No backdrop blur. Surfaces are opaque paper on a paper ground; depth
+       comes from a hairline and a tiny shadow, not from frosted glass.
+     · No gradients. One flat colour per surface.
+     · Nothing lifts on hover. Hover changes border and background only, so
+       the page never feels like it is floating.
+     · Radius is 2–6px (printed card), not 12–24px (app chrome).
+     · Brass (--brass) is reserved for money, ratings and verification.
+       If something is brass it is because it is one of those three things.
+   ========================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+    --pine:        #1f5140;
+    --pine-deep:   #123027;
+    --pine-tint:   #dfe9e4;
+    --brass:       #8a6209;
+    --brass-tint:  #f4ead3;
+    /* Brass is too dark to read on the ink ground; this is the same hue
+       lifted just enough for the inverted surfaces. */
+    --brass-lift:  #d5a941;
+    --brick:       #9c2f22;
+    --ink:         #1f211d;
+    --muted:       #6a6a62;
+    --faint:       #7d7d74;
+    --paper:       #f4f4ef;
+    --card:        #ffffff;
+    --rule:        #dcdcd3;
+    --rule-strong: #c9c9be;
+
+    /* One shadow, used sparingly. Anything needing more than this is
+       probably a modal, which has its own. */
+    --lift: 0 1px 2px rgba(31, 33, 29, 0.05);
+    --lift-modal: 0 12px 32px rgba(31, 33, 29, 0.18);
+}
+
+/* ============================== 1. Base ================================= */
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: Karla, system-ui, -apple-system, "Segoe UI", sans-serif;
+    /* Karla's default figures are proportional; tabular ones keep prices and
+       counts aligned in the ledgers. */
+    font-feature-settings: "tnum" 1;
+    margin: 0;
+}
+
+/* Headings are Bitter at 500. The old rule pushed them to 800 with a
+   text-shadow; both are gone. */
+h1, h2, h3, h4 {
+    font-family: Bitter, Georgia, serif;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 0;
+}
+
+a { color: var(--pine); }
+
+/* Links are underlined by default so they are distinguishable from buttons
+   without relying on colour alone. Nav and buttons opt out via .no-underline. */
+main a:not(.no-underline):not([class*="bg-"]):not(.btn) {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    text-decoration-color: rgba(31, 81, 64, 0.35);
+}
+main a:not(.no-underline):not([class*="bg-"]):not(.btn):hover {
+    text-decoration-color: currentColor;
+}
+
+/* One visible focus ring for the whole site, keyboard-only. */
+:focus-visible {
+    outline: 2px solid var(--pine);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-outlined[data-weight="fill"] { font-variation-settings: 'FILL' 1; }
+
+::selection { background: var(--pine-tint); color: var(--pine-deep); }
+
+/* Respect the OS setting. Everything below degrades to instant. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ============================ 2. Surfaces =============================== */
+
+/* The default surface: white paper, hairline, barely any shadow. This
+   replaced the old .glass-panel / .glass-card, which were kept as aliases
+   during the redesign; no page emits those names any more, so they are gone. */
+.panel {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: var(--lift);
+}
+
+/* A panel that is only a container, not an object — no shadow, so nested
+   panels don't stack up visual weight. */
+.panel-flat {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+}
+
+/* Sunken area for secondary content inside a panel. */
+.well {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+}
+
+/* The ink band — a dark full-bleed strip used once per page at most, to
+   separate a section without adding another card. */
+.band-ink {
+    background: var(--ink);
+    color: var(--paper);
+}
+.band-ink h1, .band-ink h2, .band-ink h3 { color: #fff; }
+.band-ink .eyebrow { color: rgba(244, 244, 239, 0.55); }
+.band-ink a { color: var(--paper); }
+
+/* ============================== 3. Type ================================= */
+
+/* Eyebrow: the small spaced caps that label a section. This is the one place
+   letter-spacing goes wide, so it reads as a label and not as a heading. */
+.eyebrow {
+    font-size: 11px;
+    line-height: 15px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--faint);
+}
+
+/* Section heading with a rule that runs to the end of the line — the
+   structural device from a printed register. Encodes "new section" without
+   needing a card boundary. */
+.rule-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+}
+.rule-heading::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+}
+
+/* Money, counts and ratings. Tabular, slightly tightened. */
+.figure {
+    font-family: Bitter, Georgia, serif;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+
+/* Brass is only ever these three things. */
+.money, .rating-value { color: var(--brass); }
+
+/* ============================ 4. Controls =============================== */
+
+/* Buttons: flat fill, real 40px/44px targets, and a genuine :active that
+   presses in rather than scaling up. */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    font-family: Karla, system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+    background: var(--pine);
+    color: #fff;
+    border-color: var(--pine);
+}
+.btn-primary:hover { background: var(--pine-deep); border-color: var(--pine-deep); }
+
+.btn-secondary {
+    background: var(--card);
+    color: var(--ink);
+    border-color: var(--rule-strong);
+}
+.btn-secondary:hover { background: var(--paper); border-color: var(--faint); }
+
+.btn-quiet {
+    background: transparent;
+    color: var(--pine);
+    border-color: transparent;
+    padding: 0 10px;
+}
+.btn-quiet:hover { background: var(--pine-tint); }
+
+/* Outline: an important action that appears many times on a page (the Book
+   button on every worker card). Filling all nine of them would make the grid
+   a wall of dark green and drown out the names and prices. */
+.btn-outline {
+    background: transparent;
+    color: var(--pine);
+    border-color: var(--pine);
+}
+.btn-outline:hover { background: var(--pine-tint); }
+
+.btn-danger {
+    background: transparent;
+    color: var(--brick);
+    border-color: rgba(156, 47, 34, 0.3);
+}
+.btn-danger:hover { background: rgba(156, 47, 34, 0.07); border-color: var(--brick); }
+
+.btn-lg { height: 46px; padding: 0 24px; font-size: 15px; }
+.btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+
+/* Disabled must look unavailable without becoming invisible. */
+.btn:disabled, .btn[disabled], .btn[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Tailwind-classed buttons across the pages get the same shape without
+   needing every markup site rewritten. */
+button[class*="bg-primary"], a[class*="bg-primary"] {
+    transition: background-color 120ms ease, border-color 120ms ease;
+}
+button[class*="bg-primary"]:hover, a[class*="bg-primary"]:hover {
+    background-color: var(--pine-deep);
+}
+button[class*="bg-primary"]:active, a[class*="bg-primary"]:active {
+    transform: translateY(1px);
+}
+
+/* Inputs: a real field, not a floating pill. Focus is a ring plus a border
+   change, which reads at a glance and satisfies contrast. Range sliders are
+   excluded — a track should not have a field's border. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select {
+    background: var(--card);
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    color: var(--ink);
+    font-family: Karla, system-ui, sans-serif;
+    font-size: 15px;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+/* One height for every single-line control, so a date field and a text field
+   sit on the same line without per-input utility classes. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select {
+    min-height: 42px;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+textarea:focus,
+select:focus {
+    border-color: var(--pine);
+    box-shadow: 0 0 0 3px rgba(31, 81, 64, 0.14);
+    outline: none;
+}
+input::placeholder, textarea::placeholder { color: var(--faint); }
+input:disabled, textarea:disabled, select:disabled {
+    background: var(--paper);
+    color: var(--faint);
+    cursor: not-allowed;
+}
+/* Invalid only after the user has actually tried something. */
+input[aria-invalid="true"], textarea[aria-invalid="true"] {
+    border-color: var(--brick);
+}
+
+label { color: var(--muted); }
+
+/* The word above a control. Ink, not grey: a label is read before the field
+   is filled, so it has to be the most legible thing in the row. */
+.field-label {
+    display: block;
+    font-family: Karla, system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+}
+.field-label .field-optional {
+    font-weight: 400;
+    color: var(--faint);
+}
+/* Help text sits under the control, where it is read after the question. */
+.field-hint {
+    display: block;
+    margin-top: 5px;
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--faint);
+}
+
+/* Status badges. Flat tint, no shadow, no gradient. */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.badge-verified { background: var(--brass-tint); color: #6b4b06; }
+.badge-good     { background: var(--pine-tint);  color: var(--pine-deep); }
+.badge-wait     { background: #eeeee7;           color: var(--muted); }
+.badge-stop     { background: #f7e3e0;           color: #7a251a; }
+
+/* Chips: the trade filter row and the rating buttons on the dashboard. A chip
+   is a real toggle, so it reports state with aria-pressed and looks pressed —
+   this replaces six tiles with coloured icon circles that rotated through four
+   accent colours for no reason. */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 3px;
+    background: var(--card);
+    color: var(--ink);
+    font-family: Karla, system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.chip:hover { border-color: var(--faint); }
+.chip-count {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--faint);
+}
+.chip[aria-pressed="true"] {
+    background: var(--pine-tint);
+    border-color: var(--pine);
+    color: var(--pine-deep);
+}
+.chip[aria-pressed="true"] .chip-count { color: var(--pine); }
+
+/* --- Availability switch ------------------------------------------------
+   Self-contained now: it used to be nine Tailwind utilities per instance
+   (w-16, a 32px round knob with a 4px border, checked:translate-x-8) plus
+   these rules, duplicated in account.html and profile.html. A switch is one
+   of the few things that should be fully round, so it is.
+
+   The off state is neutral grey, not the error red it used to be — a worker
+   who is not taking jobs today is not in an error state. */
+.switch {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    flex-shrink: 0;
+}
+.toggle-checkbox {
+    position: absolute;
+    inset: 0;
+    width: 44px;
+    height: 24px;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+.toggle-label {
+    display: block;
+    width: 44px;
+    height: 24px;
+    border-radius: 999px;
+    background: var(--faint);
+    position: relative;
+    cursor: pointer;
+    transition: background-color 160ms ease;
+}
+.toggle-label::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #fff;
+    transition: transform 160ms ease;
+}
+.toggle-checkbox:checked + .toggle-label { background: var(--pine); }
+.toggle-checkbox:checked + .toggle-label::before { transform: translateX(20px); }
+.toggle-checkbox:focus-visible + .toggle-label {
+    outline: 2px solid var(--pine);
+    outline-offset: 2px;
+}
+.toggle-checkbox:disabled + .toggle-label { opacity: 0.5; cursor: wait; }
+
+/* Theme switch. Square, quiet, no rotation on hover. */
+.theme-toggle {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    margin-left: 8px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.theme-toggle:hover { background: var(--paper); color: var(--ink); border-color: var(--faint); }
+.theme-toggle-floating { position: fixed; right: 20px; top: 20px; z-index: 70; }
+.theme-toggle-mobile { width: 34px; height: 34px; margin: 0; }
+
+/* ========================== 5. Page pieces ============================== */
+
+/* --- Navigation ---------------------------------------------------------
+   Sidebar items are flush rows with a left edge, not pills. The active one
+   gets a solid bar; that single 3px mark is the whole indicator. */
+.nav-side-item {
+    position: relative;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+    background: none;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 0;
+    cursor: pointer;
+}
+.nav-side-item:hover { background: var(--paper); }
+.nav-side-active {
+    border-left-color: var(--pine);
+    background: var(--pine-tint);
+}
+
+.nav-bottom-item { text-decoration: none; }
+.nav-bottom-active { position: relative; }
+.nav-bottom-active::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 22%;
+    right: 22%;
+    height: 2px;
+    background: var(--pine);
+}
+
+/* The masthead: a single hairline under the header, no drop shadow. The old
+   header floated on a 28px blue shadow. */
+.masthead {
+    background: var(--card);
+    border-bottom: 1px solid var(--rule);
+}
+
+/* --- Inline notices -----------------------------------------------------
+   One message shape for the whole site: a left bar in the status colour, a
+   hairline box, no icon and no shadow. booking.js, login.html, account.js
+   and admin.js each used to build their own out of six Tailwind classes. */
+.notice {
+    border: 1px solid var(--rule-strong);
+    border-left: 3px solid var(--faint);
+    border-radius: 3px;
+    padding: 10px 14px 11px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Karla, system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+}
+.notice-error {
+    border-color: rgba(156, 47, 34, 0.3);
+    border-left-color: var(--brick);
+    background: #fdf6f5;
+    color: #7a251a;
+}
+.notice-good {
+    border-color: rgba(31, 81, 64, 0.25);
+    border-left-color: var(--pine);
+    background: var(--pine-tint);
+    color: var(--pine-deep);
+}
+
+/* --- Specification list -------------------------------------------------
+   Term on the left, value on the right, one hairline per row. The rate
+   board's ruled-row logic applied to facts instead of prices, so the worker
+   docket, the booking slip and the account summary all read as pages from
+   the same register. Replaces three separate hand-built dl layouts. */
+.spec > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 0 10px;
+    border-top: 1px solid var(--rule);
+}
+.spec dt {
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--muted);
+    flex-shrink: 0;
+}
+.spec dd {
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--ink);
+    text-align: right;
+}
+/* The row that carries the number the reader came for. */
+.spec > .spec-total {
+    border-top-width: 2px;
+    border-top-color: var(--rule-strong);
+    padding-top: 11px;
+}
+.spec > .spec-total dt { color: var(--ink); font-weight: 600; }
+.spec > .spec-total dd { font-size: 19px; }
+
+/* The same ruled rows on an ink ground — the sign-in page sets the live
+   starting rates in this, so the first thing you see is the register itself. */
+.spec-invert > div { border-top-color: rgba(244, 244, 239, 0.16); }
+.spec-invert dt { color: rgba(244, 244, 239, 0.62); }
+.spec-invert dd { color: var(--paper); }
+.spec-invert dd.money { color: var(--brass-lift); }
+
+/* --- Tally band ---------------------------------------------------------
+   A short run of figures read across ruled columns, instead of one floating
+   card per number with an icon restating the label inside it. The worker
+   dashboard and the admin console both used icon-card grids for this; a
+   tally is what a register actually does with a set of counts.
+
+   Base is two-up (phones), dividing rules between columns and between rows.
+   `.tally` alone opens to four-up on desktop (the worker's four figures);
+   `.tally-3` opens to three-up (the admin's six). Both counts divide evenly
+   at every width, so it re-arranges into a balanced band rather than
+   stranding an orphan cell. */
+.tally {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 2px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule);
+}
+.tally-cell {
+    padding: 14px 20px 16px;
+    border-left: 1px solid var(--rule);
+    min-width: 0;
+}
+.tally-cell:nth-child(odd) { border-left: 0; padding-left: 0; }
+.tally-cell:nth-child(n + 3) { border-top: 1px solid var(--rule); }
+.tally-value {
+    display: block;
+    font-size: 26px;
+    line-height: 32px;
+    margin-top: 3px;
+}
+@media (min-width: 900px) {
+    /* Four-up: every third-and-later cell loses its row rule, the first in
+       each row loses its column rule. */
+    .tally { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .tally .tally-cell:nth-child(odd) { border-left: 1px solid var(--rule); padding-left: 20px; }
+    .tally .tally-cell:nth-child(n + 3) { border-top: 0; }
+    .tally .tally-cell:first-child { border-left: 0; padding-left: 0; }
+
+    /* Three-up override for the admin's six figures. */
+    .tally-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .tally-3 .tally-cell { border-left: 1px solid var(--rule); padding-left: 20px; border-top: 0; }
+    .tally-3 .tally-cell:nth-child(3n + 1) { border-left: 0; padding-left: 0; }
+    .tally-3 .tally-cell:nth-child(n + 4) { border-top: 1px solid var(--rule); }
+}
+
+/* --- The rate board -----------------------------------------------------
+   The signature element. A hanging tariff card: ink header, ruled rows of
+   real services and real starting prices from the database. It replaces the
+   six identical floating service cards, and its ruled-row logic is reused
+   for the roster, the job list and the admin figures. */
+.rateboard {
+    background: var(--card);
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.rateboard-head {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 14px 20px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+}
+.rateboard-head .eyebrow { color: rgba(244, 244, 239, 0.62); }
+
+/* A row is a button (choosing a service filters the roster), so it must not
+   look like a paragraph. The leading rule and the hover tint do that job
+   without a card boundary or an icon. */
+.rate-row {
+    display: block;
+    width: 100%;
+    padding: 12px 20px 13px;
+    border: 0;
+    border-top: 1px solid var(--rule);
+    background: transparent;
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+}
+.rate-row:first-of-type { border-top: 0; }
+.rate-row:hover { background: var(--paper); }
+.rate-row[aria-pressed="true"] {
+    background: var(--pine-tint);
+    box-shadow: inset 3px 0 0 var(--pine);
+}
+/* The tariff line itself: name, leader, price, all sitting on one baseline. */
+.rate-row-line {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+.rate-row-name {
+    font-family: Bitter, Georgia, serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+}
+.rate-row-meta {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--faint);
+}
+/* Dotted leader between the service and its price — the tariff-card device
+   that makes the two columns read as one line. */
+.rate-row-lead {
+    flex: 1;
+    border-bottom: 1px dotted var(--rule-strong);
+    align-self: baseline;
+    margin: 0 4px 4px;
+    min-width: 12px;
+}
+.rate-row-price {
+    font-family: Bitter, Georgia, serif;
+    font-variant-numeric: tabular-nums;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--brass);
+    white-space: nowrap;
+}
+
+/* --- Ledger rows --------------------------------------------------------
+   Used for the worker roster, bookings, jobs and the audit log. Rows are
+   separated by a hairline, not by gaps between cards. */
+.ledger {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.ledger-row {
+    padding: 16px 20px;
+    border-top: 1px solid var(--rule);
+    transition: background-color 120ms ease;
+}
+.ledger-row:first-child { border-top: 0; }
+.ledger-row:hover { background-color: #faf9f6; }
+
+/* The old .table-row-hover slid rows 8px sideways. Kept as a name because
+   admin.js emits it; the movement is gone. */
+.table-row-hover { transition: background-color 120ms ease; }
+.table-row-hover:hover { background-color: #faf9f6; }
+
+/* Tables: ruled, tabular figures, sticky-feeling header via the eyebrow. */
+table { border-collapse: collapse; width: 100%; }
+thead th {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--faint);
+    text-align: left;
+    padding: 0 16px 10px 0;
+    border-bottom: 1px solid var(--rule-strong);
+}
+tbody td { font-variant-numeric: tabular-nums; }
+tbody tr { border-bottom: 1px solid var(--rule); }
+tbody tr:last-child { border-bottom: 0; }
+
+/* --- Worker roster card -------------------------------------------------
+   Still a card, because a worker is a discrete thing you compare and pick.
+   But: square-ish corners, hairline border, hover changes the border only. */
+.worker-card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    transition: border-color 120ms ease, background-color 120ms ease;
+}
+.worker-card:hover { border-color: var(--faint); }
+
+/* The stamp: a rotated verification mark, like something pressed onto the
+   page by hand. This is the one deliberate imperfection in the design and
+   the only rotated element on the site. It is applied by JS ONLY to workers
+   whose verification is actually "Verified" — the previous stylesheet
+   stamped every card unconditionally, which was a lie. */
+.stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px 4px;
+    border: 1px solid rgba(138, 98, 9, 0.45);
+    border-radius: 3px;
+    color: var(--brass);
+    background: rgba(244, 234, 211, 0.55);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transform: rotate(-1.6deg);
+}
+
+/* --- Filter drawer (dashboard, mobile) --------------------------------- */
+#filterDrawer {
+    transform: translateX(100%);
+    transition: transform 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+#filterDrawer.open { transform: translateX(0); }
+#drawerOverlay {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+}
+#drawerOverlay.open { opacity: 1; pointer-events: auto; }
+
+/* The three-panel sliding booking wizard (.step-container / .step-content)
+   and the .slot-btn time grid lived here. The booking page is now a single
+   ruled form whose time field is a native select listing only the slots the
+   worker actually has free, so both are gone rather than left dangling. */
+
+/* ======================== 6. Loading and empty ========================== */
+
+/* Skeletons pulse rather than sweep a highlight across the screen. Quieter,
+   and it doesn't imply motion where there is none. */
+.shimmer {
+    background: #e9e9e1;
+    border-radius: 3px;
+    display: inline-block;
+    position: relative;
+    animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
+@keyframes skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.55; }
+}
+
+/* Empty and error states share a shape: a rule, a line of explanation, and
+   one action. No large centred icon. */
+.state {
+    border: 1px dashed var(--rule-strong);
+    border-radius: 6px;
+    padding: 32px 24px;
+    background: var(--card);
+}
+.state-title {
+    font-family: Bitter, Georgia, serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink);
+}
+.state-body { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.state-error { border-color: rgba(156, 47, 34, 0.35); background: #fdf6f5; }
+
+/* ============================= 7. Dark theme ============================
+   Night ledger: warm-neutral dark ground, not navy. Same rules — flat
+   surfaces, hairlines, brass reserved for money. */
+
+html.dark {
+    color-scheme: dark;
+    --pine:        #7fb79f;
+    --pine-deep:   #9ccbb5;
+    --pine-tint:   #1d2b26;
+    --brass:       #d5a941;
+    --brass-tint:  #33291459;
+    --brick:       #e0806f;
+    --ink:         #ecece4;
+    --muted:       #a3a399;
+    --faint:       #8d8d84;
+    --paper:       #1a1b18;
+    --card:        #232420;
+    --rule:        #34352f;
+    --rule-strong: #43443c;
+    --lift: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+html.dark body { background-color: var(--paper); color: var(--ink); }
+html.dark h1, html.dark h2, html.dark h3, html.dark h4 { color: var(--ink); }
+
+/* Tailwind's utility classes are baked into the markup, so the dark theme
+   has to override them. Grouped by what they do rather than by page. */
+html.dark .text-on-surface,
+html.dark .text-on-background     { color: var(--ink) !important; }
+html.dark .text-on-surface-variant{ color: var(--muted) !important; }
+html.dark .text-outline           { color: var(--faint) !important; }
+html.dark .text-primary           { color: var(--pine) !important; }
+html.dark .text-secondary         { color: var(--brass) !important; }
+html.dark .text-error             { color: var(--brick) !important; }
+html.dark .text-on-primary-container   { color: #fff !important; }
+html.dark .text-on-secondary-container { color: #f0dfb8 !important; }
+
+html.dark header,
+html.dark aside,
+html.dark nav.fixed,
+html.dark footer {
+    background-color: var(--card) !important;
+    border-color: var(--rule) !important;
+}
+
+html.dark .panel,
+html.dark .panel-flat,
+html.dark .ledger,
+html.dark .rateboard,
+html.dark .worker-card,
+html.dark .state,
+html.dark .bg-white,
+html.dark .bg-surface-container-lowest,
+html.dark .bg-surface-bright {
+    background-color: var(--card) !important;
+    border-color: var(--rule) !important;
+}
+
+html.dark .well,
+html.dark .bg-surface,
+html.dark .bg-surface-container,
+html.dark .bg-surface-container-low,
+html.dark .bg-surface-container-high,
+html.dark .bg-surface-container-highest,
+html.dark .bg-surface-variant {
+    background-color: #1e1f1b !important;
+}
+
+html.dark .band-ink, html.dark .rateboard-head { background: #121310; }
+html.dark .ledger-row:hover, html.dark .table-row-hover:hover { background-color: #282923; }
+html.dark .rate-row:hover { background-color: #282923; }
+html.dark .rate-row[aria-pressed="true"] { background-color: var(--pine-tint); }
+
+html.dark .bg-primary, html.dark .bg-primary-container { background-color: #2c6b56 !important; }
+html.dark .bg-secondary-container { background-color: #3a2f14 !important; }
+html.dark .bg-error-container     { background-color: #3d211c !important; }
+html.dark .badge-verified { background: #3a2f14; color: #e8c877; }
+html.dark .badge-good     { background: var(--pine-tint); color: #9ccbb5; }
+html.dark .badge-wait     { background: #2a2b26; color: var(--muted); }
+html.dark .badge-stop     { background: #3d211c; color: #eda292; }
+html.dark .stamp { background: rgba(213, 169, 65, 0.10); border-color: rgba(213, 169, 65, 0.4); }
+
+html.dark [class*="border-surface"],
+html.dark .border-outline-variant { border-color: var(--rule) !important; }
+html.dark thead th { border-bottom-color: var(--rule-strong); }
+html.dark tbody tr { border-bottom-color: var(--rule); }
+
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark textarea,
+html.dark select {
+    background-color: #1a1b18 !important;
+    color: var(--ink) !important;
+    border-color: var(--rule-strong) !important;
+}
+html.dark option { background: var(--card); color: var(--ink); }
+
+html.dark .btn-secondary { background: var(--card); color: var(--ink); border-color: var(--rule-strong); }
+html.dark .btn-primary   { background: #2c6b56; border-color: #2c6b56; color: #fff; }
+html.dark .btn-primary:hover { background: #358067; border-color: #358067; }
+html.dark .chip { background: var(--card); color: var(--ink); border-color: var(--rule-strong); }
+html.dark .chip[aria-pressed="true"] { background: var(--pine-tint); border-color: var(--pine); color: #cfe6db; }
+
+html.dark .nav-side-item:hover { background: #282923; }
+html.dark .nav-side-active { background: var(--pine-tint); border-left-color: var(--pine); }
+html.dark .masthead { background: var(--card); border-bottom-color: var(--rule); }
+html.dark .theme-toggle { background: var(--card); color: var(--brass); border-color: var(--rule-strong); }
+html.dark .shimmer { background: #2c2d27; }
+html.dark .state { border-color: var(--rule-strong); }

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin console — SahayakSetu Federation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="css/style.css"/>
+<script src="js/tailwind-config.js"></script>
+<script src="js/theme.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600&amp;family=Karla:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+</head>
+<body class="flex min-h-screen bg-background font-body-md text-on-surface">
+
+<!-- ============================== Sidebar ===============================
+     Was a shadowed rail with a round diversity_3 badge on top. It is now a
+     plain column with a single hairline down its right edge — a filing
+     divider, not a floating panel. js/nav.js fills the links and user chip. -->
+<nav class="hidden md:flex flex-col h-screen sticky top-0 w-60 flex-shrink-0 bg-surface-container-low border-r border-outline-variant px-5 py-6 z-40">
+<div class="mb-8">
+<a class="no-underline" href="landing.html">
+<span class="font-headline-lg text-[19px] leading-none text-primary block">SahayakSetu</span>
+<span class="eyebrow mt-1.5 block">Cooperative Federation</span>
+</a>
+</div>
+<!-- Filled in by js/nav.js based on who is signed in. -->
+<div class="space-y-1 flex-grow" data-nav="side"></div>
+<div class="mt-auto flex items-center gap-3 pt-4 border-t border-outline-variant" data-nav="user"></div>
+</nav>
+
+<!-- Main -->
+<main class="flex-1 min-w-0 max-w-[1240px] mx-auto px-margin-mobile md:px-margin-desktop py-8 pb-32 md:pb-12">
+
+<!-- Header. The right cluster is a plain DIV so js/theme.js drops the
+     light/dark switch in beside the other controls. -->
+<header class="flex flex-wrap justify-between items-start gap-4 mb-9">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Admin console</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Every figure below is read live from the federation database.</p>
+</div>
+<div class="flex items-center gap-2 flex-shrink-0">
+<button class="btn btn-quiet btn-sm" id="open-audit" type="button">Activity</button>
+<a class="btn btn-secondary btn-sm no-underline" href="account.html">My account</a>
+<button class="nav-logout btn btn-secondary btn-sm" type="button">Log out</button>
+</div>
+</header>
+
+<!-- ============================== Tally =================================
+     Nine numbers that were nine floating cards (each with an icon repeating
+     its own label) are now one ruled band of six figures, three sub-counts
+     hung under the figures they qualify. -->
+<dl class="tally tally-3 mb-10">
+<div class="tally-cell">
+<dt class="eyebrow">Total workers</dt>
+<dd class="figure tally-value text-on-surface" id="stat-workers">0</dd>
+<p class="font-body-md text-[13px] text-on-surface-variant mt-1"><span class="figure" id="stat-customers">0</span> customers registered</p>
+</div>
+<div class="tally-cell">
+<dt class="eyebrow">Verified workers</dt>
+<dd class="figure tally-value text-on-surface" id="stat-verified-workers">0</dd>
+<p class="font-body-md text-[13px] text-on-surface-variant mt-1"><span id="stat-verified-pct">—</span> of all workers</p>
+</div>
+<div class="tally-cell">
+<dt class="eyebrow">Total revenue</dt>
+<dd class="figure money tally-value" id="stat-revenue">&#8377;0</dd>
+<p class="font-body-md text-[13px] text-on-surface-variant mt-1"><span class="figure" id="stat-active">0</span> bookings active now</p>
+</div>
+<div class="tally-cell">
+<dt class="eyebrow">Completed jobs</dt>
+<dd class="figure tally-value text-on-surface" id="stat-completed">0</dd>
+</div>
+<div class="tally-cell">
+<dt class="eyebrow">This month</dt>
+<dd class="figure money tally-value" id="stat-monthly-revenue">&#8377;0</dd>
+</div>
+<div class="tally-cell">
+<dt class="eyebrow">Average rating</dt>
+<dd class="figure rating-value tally-value" id="stat-avg-rating">— ★</dd>
+</div>
+</dl>
+
+<!-- ===================== Workers + admin actions ======================
+     The roster you manage on the left; the buttons that act on the whole
+     federation on the right. -->
+<section class="grid lg:grid-cols-3 gap-10 lg:gap-12 mb-12">
+<div class="lg:col-span-2 min-w-0">
+<div class="rule-heading mb-1">
+<h2 class="font-title-md text-title-md text-on-surface">Worker management</h2>
+<span class="eyebrow flex-shrink-0">Live</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-5">Verify a new listing, or suspend and reinstate one.</p>
+<div id="worker-management-list">
+<p class="font-body-md text-[14px] text-on-surface-variant">Loading workers…</p>
+</div>
+</div>
+<div class="lg:col-span-1 min-w-0">
+<div class="rule-heading mb-1">
+<h2 class="font-title-md text-title-md text-on-surface">Actions</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-5">Federation-wide tasks.</p>
+<div class="flex flex-col gap-3">
+<button class="admin-action btn btn-primary w-full" data-action="register" type="button">Register a worker</button>
+<button class="admin-action btn btn-secondary w-full" data-action="export" type="button">Export activity report</button>
+<button class="admin-action btn btn-secondary w-full" data-action="bookings" type="button">Refresh all bookings</button>
+</div>
+<p id="admin-action-message" class="hidden notice mt-5"></p>
+</div>
+</section>
+
+<!-- ===================== Bookings + service demand ====================
+     Real cooperative bookings, and which trades customers actually ask for
+     this month — the honest version of the invented forecast that used to
+     sit here as eight hardcoded bars. -->
+<section class="grid lg:grid-cols-3 gap-10 lg:gap-12 mb-12">
+<div class="lg:col-span-2 min-w-0">
+<div class="rule-heading mb-1">
+<h2 class="font-title-md text-title-md text-on-surface">Booking overview</h2>
+<button class="admin-action btn btn-quiet btn-sm flex-shrink-0" data-action="bookings" type="button">Refresh</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-5">Recent bookings across the federation.</p>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr>
+<th class="pr-4">Ref</th>
+<th class="pr-4">Customer</th>
+<th class="pr-4">Worker</th>
+<th class="pr-4">Trade</th>
+<th class="pr-4 text-right">Amount</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="booking-overview-list" class="font-body-md text-[14px]"></tbody>
+</table>
+</div>
+</div>
+<div class="lg:col-span-1 min-w-0">
+<div class="rule-heading mb-1">
+<h2 class="font-title-md text-title-md text-on-surface">Service demand</h2>
+<span class="eyebrow flex-shrink-0">This month</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-5">Share of bookings by trade.</p>
+<div id="service-analytics-list" class="space-y-4"></div>
+</div>
+</section>
+
+<!-- Activity Log — fed by the append-only audit_log table -->
+<section id="audit-log">
+<div class="rule-heading mb-1">
+<h2 class="font-title-md text-title-md text-on-surface">Recent activity</h2>
+<button class="btn btn-quiet btn-sm flex-shrink-0" id="refresh-audit" type="button">Refresh</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-5">Every login, booking and verification, in order. This log is append-only.</p>
+<div class="max-h-96 overflow-y-auto" id="audit-list">
+<p class="font-body-md text-[14px] text-on-surface-variant">Loading activity…</p>
+</div>
+</section>
+
+</main>
+
+<!-- BottomNavBar (Mobile Only) — filled in by js/nav.js -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center gap-1 px-2 py-2 md:hidden bg-surface-container-lowest border-t border-outline-variant" data-nav="bottom"></nav>
+
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/chat-widget.js"></script>
+</body>
+</html>

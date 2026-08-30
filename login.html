@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sign in — SahayakSetu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="css/style.css"/>
+<script src="js/tailwind-config.js"></script>
+<script src="js/theme.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600&amp;family=Karla:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Only glyph this page needs: the light/dark icon js/theme.js injects. -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+</head>
+
+<!-- This page carried its own 120-line <style> block: a two-stop radial
+     gradient ground, a 24px-radius card on a 60px blue shadow, a gradient
+     "SS" logo tile and a gradient button that lifted 2px on hover. All of it
+     is gone. The page now uses the shared system, and the ground is a split:
+     the register in ink on one side, the form on paper on the other. -->
+<body class="min-h-screen bg-background text-on-background lg:grid lg:grid-cols-12">
+
+<!-- ======================= Left: the register, in ink ====================
+     Not decoration — these are the real starting rates, read from the same
+     /api/services call the trade dropdown already needed. On a phone this
+     column shrinks to the wordmark strip; the rates are supporting context,
+     so they are the part that goes. -->
+<aside class="band-ink lg:col-span-5 xl:col-span-4 flex flex-col justify-between gap-10 px-margin-mobile md:px-margin-desktop py-6 lg:py-12">
+<div>
+<a class="no-underline block" href="landing.html">
+<span class="font-headline-lg text-[21px] leading-none block">SahayakSetu</span>
+<span class="eyebrow mt-1.5 block">Cooperative Federation</span>
+</a>
+<p class="hidden lg:block font-body-md text-body-md mt-9 max-w-[32ch] text-white/70">A register of verified tradespeople who own the platform they work on. Prices are published, not bid for.</p>
+</div>
+<div class="hidden lg:block">
+<p class="eyebrow mb-1">Starting rates today</p>
+<dl class="spec spec-invert" id="login-rates">
+<div><dt>Loading rates…</dt><dd>&mdash;</dd></div>
+</dl>
+</div>
+</aside>
+
+<!-- ============================ Right: the form ========================= -->
+<main class="lg:col-span-7 xl:col-span-8 flex items-start lg:items-center justify-center px-margin-mobile md:px-margin-desktop py-10 lg:py-12">
+<div class="w-full max-w-[26rem]">
+
+<a class="font-label-md text-label-md" href="landing.html">&larr; Back to home</a>
+
+<h1 class="font-headline-lg text-headline-lg text-on-surface mt-6" id="auth-title">Sign in</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2" id="auth-subtitle">Your bookings, your listing and your history live behind this.</p>
+
+<div class="notice notice-error hidden mt-6" id="error-message" role="alert"></div>
+
+<form class="mt-7" id="login-form" novalidate>
+
+<div class="signup-only mb-5" hidden>
+<label class="field-label" for="fullname">Full name</label>
+<input autocomplete="name" class="w-full" id="fullname" placeholder="As it should appear to customers" type="text"/>
+</div>
+
+<div class="mb-5">
+<label class="field-label" for="email">Email</label>
+<input autocomplete="email" class="w-full" id="email" placeholder="you@example.com" required type="email"/>
+</div>
+
+<div class="signup-only mb-5" hidden>
+<label class="field-label" for="phone">Mobile number</label>
+<input autocomplete="tel" class="w-full" id="phone" inputmode="numeric" placeholder="10 digits" type="tel"/>
+</div>
+
+<div class="mb-5">
+<label class="field-label" for="password">Password</label>
+<input autocomplete="current-password" class="w-full" id="password" placeholder="Enter password" required type="password"/>
+</div>
+
+<div class="mb-5">
+<label class="field-label" for="role" id="role-label">Sign in as</label>
+<select class="w-full" id="role" required>
+<option value="">Select your role</option>
+<option value="customer">Customer</option>
+<option value="worker">Worker</option>
+<option value="admin">Admin</option>
+</select>
+</div>
+
+<div class="mb-5" hidden id="service-field">
+<label class="field-label" for="service">Your trade</label>
+<select class="w-full" id="service">
+<option value="Electrician">Electrician</option>
+<option value="Plumber">Plumber</option>
+<option value="Cleaner">Cleaner</option>
+<option value="Driver">Driver</option>
+<option value="Carpenter">Carpenter</option>
+<option value="Painter">Painter</option>
+</select>
+<span class="field-hint">This is the trade customers will find you under.</span>
+</div>
+
+<button class="btn btn-primary btn-lg w-full mt-2" id="submit-btn" type="submit">Sign in</button>
+
+</form>
+
+<p class="font-body-md text-[14px] text-on-surface-variant mt-5">
+<span id="switch-text">New to SahayakSetu?</span>
+<button class="font-label-md text-label-md underline" id="switch-mode" type="button">Create an account</button>
+</p>
+
+<!-- Demo accounts. A well, not a green-tinted rounded pill. -->
+<div class="well p-4 mt-7" id="demo-box">
+<p class="eyebrow mb-2">Demo accounts &mdash; password <span class="figure">demo1234</span></p>
+<div class="flex flex-wrap gap-2">
+<button class="demo-fill btn btn-quiet btn-sm" data-email="customer@demo.com" data-role="customer" type="button">Customer</button>
+<button class="demo-fill btn btn-quiet btn-sm" data-email="worker@demo.com" data-role="worker" type="button">Worker</button>
+<button class="demo-fill btn btn-quiet btn-sm" data-email="admin@demo.com" data-role="admin" type="button">Admin</button>
+</div>
+</div>
+
+<p class="font-body-md text-[14px] text-on-surface-variant mt-6 pt-5 border-t border-outline-variant">
+<a href="dashboard.html">Browse workers without an account</a> &mdash; you only need to sign in to book.
+</p>
+
+</div>
+</main>
+
+<script src="js/api.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    const rupee = String.fromCharCode(8377);
+
+    const form        = document.getElementById('login-form');
+    const errorBox    = document.getElementById('error-message');
+    const submitBtn   = document.getElementById('submit-btn');
+    const switchBtn   = document.getElementById('switch-mode');
+    const switchText  = document.getElementById('switch-text');
+    const title       = document.getElementById('auth-title');
+    const subtitle    = document.getElementById('auth-subtitle');
+    const demoBox     = document.getElementById('demo-box');
+    const roleSelect  = document.getElementById('role');
+    const roleLabel   = document.getElementById('role-label');
+    const serviceGroup = document.getElementById('service-field');
+    const passwordInput = document.getElementById('password');
+
+    let mode = 'login';   // or 'signup'
+
+    // Where to go after login: ?next=admin.html, else the role's home page.
+    const nextPage = new URLSearchParams(window.location.search).get('next');
+
+    function esc(value) {
+        return String(value === null || value === undefined ? '' : value)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    /* The error box used to be built from its own colours and toggled with
+       inline styles. It is now the shared .notice, toggled with .hidden. */
+    function showError(message) {
+        errorBox.textContent = message;
+        errorBox.classList.remove('hidden');
+    }
+    function clearError() {
+        errorBox.textContent = '';
+        errorBox.classList.add('hidden');
+    }
+
+    function applyMode() {
+        const signup = mode === 'signup';
+
+        document.querySelectorAll('.signup-only').forEach((el) => { el.hidden = !signup; });
+
+        title.textContent    = signup ? 'Create an account' : 'Sign in';
+        subtitle.textContent = signup
+            ? 'A customer account to book with, or a worker listing customers can find.'
+            : 'Your bookings, your listing and your history live behind this.';
+        submitBtn.textContent  = signup ? 'Create account' : 'Sign in';
+        switchText.textContent = signup ? 'Already registered?' : 'New to SahayakSetu?';
+        switchBtn.textContent  = signup ? 'Sign in instead' : 'Create an account';
+        roleLabel.textContent  = signup ? 'I am a' : 'Sign in as';
+        demoBox.classList.toggle('hidden', signup);
+        passwordInput.setAttribute('autocomplete', signup ? 'new-password' : 'current-password');
+        passwordInput.placeholder = signup ? 'At least 8 characters' : 'Enter password';
+
+        // Admin accounts are not self-serve, so hide that option when signing up.
+        roleSelect.querySelector('option[value="admin"]').hidden = signup;
+        if (signup && roleSelect.value === 'admin') roleSelect.value = '';
+
+        updateServiceVisibility();
+        clearError();
+    }
+
+    // The trade dropdown only matters for a worker signing up.
+    function updateServiceVisibility() {
+        serviceGroup.hidden = !(mode === 'signup' && roleSelect.value === 'worker');
+    }
+
+    switchBtn.addEventListener('click', () => {
+        mode = mode === 'login' ? 'signup' : 'login';
+        applyMode();
+    });
+
+    roleSelect.addEventListener('change', updateServiceVisibility);
+
+    document.querySelectorAll('.demo-fill').forEach((button) => {
+        button.addEventListener('click', () => {
+            document.getElementById('email').value = button.dataset.email;
+            passwordInput.value = 'demo1234';
+            roleSelect.value = button.dataset.role;
+            updateServiceVisibility();
+            clearError();
+        });
+    });
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        clearError();
+
+        const email    = document.getElementById('email').value.trim();
+        const password = passwordInput.value;
+        const role     = roleSelect.value;
+
+        if (!email || !password || !role) {
+            return showError('Please fill all the fields.');
+        }
+
+        submitBtn.disabled = true;
+        const originalLabel = submitBtn.textContent;
+        submitBtn.textContent = mode === 'signup' ? 'Creating account…' : 'Signing in…';
+
+        try {
+            let user;
+
+            if (mode === 'signup') {
+                const name  = document.getElementById('fullname').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+
+                if (name.length < 2)   throw new Error('Please enter your full name.');
+                if (password.length < 8) throw new Error('Password must be at least 8 characters.');
+                if (phone && !/^[0-9]{10}$/.test(phone)) {
+                    throw new Error('Please enter a valid 10-digit mobile number.');
+                }
+
+                user = await API.auth.register({
+                    name, email, phone, password, role,
+                    service: document.getElementById('service').value
+                });
+            } else {
+                // The password is now checked on the server against a bcrypt
+                // hash. A wrong password gets rejected.
+                user = await API.auth.login(email, password, role);
+            }
+
+            window.location.href = nextPage || API.auth.homeFor(user.role);
+
+        } catch (err) {
+            showError(err.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalLabel;
+        }
+    });
+
+    // Already signed in? Skip the form.
+    if (API.session.isLoggedIn) {
+        window.location.replace(nextPage || API.auth.homeFor(API.session.user.role));
+    }
+
+    /* The trade list is typed into the HTML as a fallback, but the real list
+       lives in the database. One call fills both the dropdown and the rate
+       column in the ink panel, so the page opens on real prices. */
+    (async () => {
+        const rates = document.getElementById('login-rates');
+        try {
+            const services = await API.services.list();
+            if (!services.length) throw new Error('no services');
+
+            const select = document.getElementById('service');
+            select.innerHTML = services
+                .map((s) => `<option value="${esc(s.name)}">${esc(s.name)}</option>`)
+                .join('');
+
+            if (rates) {
+                rates.innerHTML = services.map((s) => `
+                    <div>
+                        <dt>${esc(s.name)}</dt>
+                        <dd class="figure money">${rupee}${esc(s.base_price)}</dd>
+                    </div>`).join('');
+            }
+        } catch {
+            // Offline: keep the fallback trade options and drop the rate
+            // column rather than showing prices that might not be current.
+            if (rates) rates.innerHTML = '';
+        }
+    })();
+
+    applyMode();
+})();
+</script>
+<script src="js/chat-widget.js"></script>
+
+</body>
+</html>

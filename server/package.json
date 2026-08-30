@@ -1,0 +1,27 @@
+{
+  "name": "sahayaksetu-server",
+  "version": "1.0.0",
+  "description": "Backend API + AI chat assistant for SahayakSetu",
+  "private": true,
+  "type": "commonjs",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node seed.js",
+    "reset": "node seed.js --force",
+    "create-admin": "node create-admin.js",
+    "test": "node tests/api.test.js && node tests/account.test.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

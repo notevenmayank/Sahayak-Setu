@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Confirm your booking — SahayakSetu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="css/style.css"/>
+<script src="js/tailwind-config.js"></script>
+<script src="js/theme.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600&amp;family=Karla:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+
+<!-- ============================== Masthead ============================== -->
+<header class="masthead sticky top-0 z-40">
+<div class="max-w-[1080px] mx-auto px-margin-mobile md:px-margin-desktop h-[60px] flex items-center justify-between gap-4">
+<a class="no-underline flex items-baseline gap-3" href="landing.html">
+<span class="font-headline-lg text-[19px] leading-none text-primary">SahayakSetu</span>
+<span class="eyebrow hidden sm:inline">Booking</span>
+</a>
+<!-- js/theme.js appends the light/dark switch to this cluster. -->
+<div class="flex items-center gap-2">
+<a class="btn btn-quiet btn-sm no-underline" href="account.html#bookings">My bookings</a>
+</div>
+</div>
+</header>
+
+<main class="flex-1 pb-16">
+<div class="max-w-[1080px] mx-auto px-margin-mobile md:px-margin-desktop">
+
+<!-- =============================== Page head ============================
+     Was a centred card header with a back arrow in a circle, a 30px calendar
+     icon and a shouting "SAHAYAKSETU BOOKING" label. The back link is now a
+     plain link where a reader expects one, and the heading says what the
+     page is for. -->
+<div class="pt-7 md:pt-9 pb-6 border-b border-outline-variant">
+<a class="font-label-md text-label-md inline-flex items-center gap-1" href="dashboard.html">
+<span aria-hidden="true" class="material-symbols-outlined text-[18px]">arrow_back</span>
+Back to the register
+</a>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mt-5">Confirm your booking</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-[62ch]">Nothing is charged now. The worker sees your request, confirms the slot, and you pay once the job is done.</p>
+</div>
+
+<!-- ========================= Form and worker docket =====================
+     Two unequal columns: the request on the left, who you are booking on
+     the right, held in place while you fill the form in. On a narrow screen
+     the docket moves above the form — you want to see who this is before
+     you start typing — which is what the order- classes are for. -->
+<div class="grid lg:grid-cols-12 gap-8 lg:gap-14 pt-8" id="booking-content">
+
+<form class="lg:col-span-7 order-2 lg:order-1 min-w-0" id="booking-form" novalidate>
+
+<fieldset class="border-0 p-0 m-0 pb-7 mb-7 border-b border-outline-variant">
+<legend class="eyebrow mb-4 p-0">Who the worker should ask for</legend>
+<div class="grid sm:grid-cols-2 gap-x-5 gap-y-5">
+<label class="block">
+<span class="field-label">Your name</span>
+<input autocomplete="name" class="w-full" id="customer-name" name="customerName" required type="text"/>
+</label>
+<label class="block">
+<span class="field-label">Mobile number</span>
+<input autocomplete="tel" class="w-full" id="mobile-number" inputmode="numeric" name="mobileNumber" placeholder="10 digits" required type="tel"/>
+</label>
+<label class="block sm:col-span-2">
+<span class="field-label">Service address</span>
+<textarea autocomplete="street-address" class="w-full" id="service-address" name="serviceAddress" required rows="3"></textarea>
+<span class="field-hint">Include the landmark or flat number — it is the only thing the worker has to find you by.</span>
+</label>
+</div>
+</fieldset>
+
+<fieldset class="border-0 p-0 m-0 pb-7 mb-7 border-b border-outline-variant">
+<legend class="eyebrow mb-4 p-0">When you need them</legend>
+<div class="grid sm:grid-cols-2 gap-x-5 gap-y-5">
+<label class="block">
+<span class="field-label">Date</span>
+<input class="w-full" id="preferred-date" name="preferredDate" required type="date"/>
+</label>
+<label class="block">
+<span class="field-label">Time slot</span>
+<select class="w-full" id="preferred-time" name="preferredTime" required><option value="">Pick a date first</option></select>
+<span class="field-hint">Only slots this worker still has free are listed.</span>
+</label>
+</div>
+</fieldset>
+
+<label class="block">
+<span class="field-label">Anything else they should know <span class="field-optional">— optional</span></span>
+<textarea class="w-full" id="additional-instructions" name="additionalInstructions" placeholder="Gate code, which floor, what the problem looks like…" rows="3"></textarea>
+</label>
+
+<div class="mt-8 pt-6 border-t border-outline-variant">
+<button class="btn btn-primary btn-lg w-full sm:w-auto" type="submit">Send booking request</button>
+<p class="field-hint mt-3">The worker has to accept before the booking is fixed. You can cancel it from My bookings until then.</p>
+</div>
+</form>
+
+<!-- The docket: who you are booking, priced. Same ruled rows as the rate
+     board on the landing page, so the number you saw there and the number
+     you see here are set in the same brass figures. -->
+<aside class="lg:col-span-5 order-1 lg:order-2 lg:sticky lg:top-[84px] lg:self-start">
+<div class="panel-flat p-md">
+<p class="eyebrow mb-3">You are booking</p>
+<div class="flex items-start justify-between gap-3">
+<div class="min-w-0">
+<h2 class="font-title-md text-title-md text-on-surface" id="worker-name">Loading…</h2>
+<p class="font-body-md text-[13px] leading-[18px] text-outline mt-0.5" id="worker-service">&mdash;</p>
+</div>
+</div>
+<dl class="spec mt-4">
+<div>
+<dt>Rating</dt>
+<dd class="figure rating-value" id="worker-rating">&mdash;</dd>
+</div>
+<div>
+<dt>Distance</dt>
+<dd class="figure" id="worker-distance">&mdash;</dd>
+</div>
+<div class="spec-total">
+<dt>Starting price</dt>
+<dd class="figure money" id="worker-price">&mdash;</dd>
+</div>
+</dl>
+<p class="field-hint mt-3">The final amount is agreed with the worker; parts and materials are extra.</p>
+</div>
+</aside>
+
+</div>
+
+<!-- ============================ Confirmation ============================
+     Was a centred green circle with a 48px tick, a rounded card of grey
+     label/value pairs and three equally-weighted buttons. It is now a
+     booking slip: the reference in the ink header where you can find it
+     again, the facts ruled underneath, and one clear next step. -->
+<div class="hidden pt-8 grid lg:grid-cols-12 gap-10 lg:gap-14" id="booking-confirmation">
+
+<div class="lg:col-span-5">
+<p class="eyebrow mb-3">Request sent</p>
+<h2 class="font-headline-lg text-headline-lg text-on-surface max-w-[22ch]">The worker has your request.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-3 max-w-[42ch]">You will see it turn to confirmed in My bookings once they accept. Nothing has been charged.</p>
+<div class="mt-7 flex flex-wrap items-center gap-3">
+<a class="btn btn-primary no-underline" href="account.html#bookings">View my bookings</a>
+<a class="btn btn-secondary no-underline" href="dashboard.html">Book someone else</a>
+</div>
+<div class="mt-7 pt-5 border-t border-outline-variant">
+<p class="eyebrow mb-2">Paying</p>
+<button class="btn btn-quiet" id="pay-now-button" type="button">Pay now</button>
+</div>
+</div>
+
+<div class="lg:col-span-6 lg:col-start-7">
+<div class="rateboard">
+<div class="rateboard-head">
+<div>
+<p class="eyebrow">Booking reference</p>
+<p class="figure text-[21px] text-secondary-fixed mt-1" id="confirmation-id">&mdash;</p>
+</div>
+<p class="font-label-sm text-label-sm text-white/55 normal-case tracking-normal text-right">Quote this<br/>if you call</p>
+</div>
+<dl class="spec px-md pb-md">
+<div>
+<dt>Worker</dt>
+<dd id="confirmation-worker">&mdash;</dd>
+</div>
+<div>
+<dt>Trade</dt>
+<dd id="confirmation-service">&mdash;</dd>
+</div>
+<div>
+<dt>Date and time</dt>
+<dd id="confirmation-datetime">&mdash;</dd>
+</div>
+<div>
+<dt>Status</dt>
+<dd><span class="badge badge-wait" id="confirmation-status">Waiting on the worker</span></dd>
+</div>
+<div class="spec-total">
+<dt>Amount</dt>
+<dd class="figure money" id="confirmation-amount">&mdash;</dd>
+</div>
+</dl>
+</div>
+</div>
+
+</div>
+
+</div>
+</main>
+
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/booking.js"></script>
+<script src="js/chat-widget.js"></script>
+</body>
+</html>

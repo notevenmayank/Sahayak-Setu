@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My account — SahayakSetu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="css/style.css"/>
+<script src="js/tailwind-config.js"></script>
+<script src="js/theme.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600&amp;family=Karla:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+
+<!-- ============================== Masthead ==============================
+     One header for both sizes, like every other page. It was two separate
+     blurred, shadowed bars. -->
+<header class="masthead sticky top-0 w-full z-50">
+<div class="hidden md:flex justify-between items-center gap-10 h-[60px] px-margin-desktop max-w-[1180px] mx-auto">
+<a class="no-underline flex items-baseline gap-3 flex-shrink-0" href="landing.html">
+<span class="font-headline-lg text-[19px] leading-none text-primary">SahayakSetu</span>
+<span class="eyebrow hidden lg:inline">My account</span>
+</a>
+<nav class="flex gap-7 items-center">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#details">Details</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#bookings">Bookings</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#password">Password</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="dashboard.html">Find workers</a>
+</nav>
+<!-- js/theme.js appends the light/dark switch to this cluster. -->
+<div class="flex gap-2 items-center flex-shrink-0">
+<button class="nav-logout btn btn-secondary btn-sm" type="button">Log out</button>
+</div>
+</div>
+<div class="flex justify-between items-center gap-4 px-margin-mobile h-[56px] w-full md:hidden">
+<a class="no-underline font-headline-lg-mobile text-primary" href="landing.html">SahayakSetu</a>
+<button class="nav-logout btn btn-secondary btn-sm" type="button">Log out</button>
+</div>
+</header>
+
+<!-- ============================ Identity band ===========================
+     Was a shadowed card with an 80px circle. It is now a band: the page's
+     one piece of full-width furniture, so the sections below it can be
+     plain content instead of five more cards. -->
+<section class="bg-surface-container-low border-b border-outline-variant">
+<div class="max-w-[1180px] mx-auto px-margin-mobile md:px-margin-desktop py-8 flex flex-wrap items-start justify-between gap-6">
+<div class="flex items-start gap-4 min-w-0">
+<div class="w-14 h-14 rounded bg-primary text-on-primary flex items-center justify-center font-headline-lg text-[20px] flex-shrink-0" id="account-initials">·</div>
+<div class="min-w-0">
+<h1 class="font-headline-lg text-headline-lg text-on-surface truncate" id="account-name">Loading…</h1>
+<p class="font-body-md text-body-md text-on-surface-variant truncate mt-0.5" id="account-email">&mdash;</p>
+<div class="mt-2.5 flex flex-wrap items-center gap-2">
+<span class="badge badge-good" id="account-role">&mdash;</span>
+<span class="hidden badge badge-verified" id="account-verified">Verified worker</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<a class="hidden btn btn-secondary no-underline" href="profile.html" id="link-jobs">My jobs</a>
+<a class="hidden btn btn-secondary no-underline" href="admin.html" id="link-admin">Admin console</a>
+</div>
+</div>
+</section>
+
+<main class="max-w-[1180px] mx-auto px-margin-mobile md:px-margin-desktop pt-10 pb-32 md:pb-16">
+<div class="grid lg:grid-cols-12 gap-10 lg:gap-14">
+
+<!-- ======================= Left: the things you edit =====================
+     Three settings sections, separated by rules rather than each one being
+     its own floating panel. Forms sit on the page. -->
+<div class="lg:col-span-7 min-w-0">
+
+<section id="details">
+<div class="rule-heading mb-1">
+<h2 class="font-title-md text-title-md text-on-surface">Personal details</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-[56ch]">Your name and number are what a worker sees when you book them.</p>
+
+<form class="max-w-xl" id="profile-form" novalidate>
+<div class="grid sm:grid-cols-2 gap-x-5 gap-y-5">
+<label class="block">
+<span class="field-label">Full name</span>
+<input autocomplete="name" class="w-full" id="field-name" required type="text"/>
+</label>
+<label class="block">
+<span class="field-label">Mobile number</span>
+<input autocomplete="tel" class="w-full" id="field-phone" inputmode="numeric" placeholder="10 digits" type="tel"/>
+</label>
+<label class="block sm:col-span-2">
+<span class="field-label">Email</span>
+<input class="w-full" disabled id="field-email" type="email"/>
+<span class="field-hint">Your email is your login, so it cannot be changed here.</span>
+</label>
+</div>
+<div class="flex flex-wrap items-center gap-4 mt-6">
+<button class="btn btn-primary" id="profile-save" type="submit">Save changes</button>
+<p class="hidden font-body-md text-[14px]" id="profile-message"></p>
+</div>
+</form>
+</section>
+
+<!-- Worker listing — hidden for customers and admins -->
+<section class="hidden mt-12 pt-10 border-t border-outline-variant" id="worker-card">
+<div class="rule-heading mb-1">
+<h2 class="font-title-md text-title-md text-on-surface">My listing</h2>
+<span class="badge badge-wait flex-shrink-0" id="worker-verification">&mdash;</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-[56ch]">What customers see when they search. <span class="text-outline" id="worker-code">&mdash;</span></p>
+
+<!-- Read-only facts, on rules. These were three bordered boxes of centred
+     text; only the admin can change any of them, so they are not fields. -->
+<dl class="spec max-w-md mb-8">
+<div>
+<dt>Rating</dt>
+<dd class="figure rating-value" id="worker-rating">&mdash;</dd>
+</div>
+<div>
+<dt>Jobs done</dt>
+<dd class="figure" id="worker-jobs">&mdash;</dd>
+</div>
+<div>
+<dt>Distance shown to customers</dt>
+<dd class="figure" id="worker-distance">&mdash;</dd>
+</div>
+</dl>
+
+<form class="max-w-xl" id="worker-form" novalidate>
+<div class="grid sm:grid-cols-2 gap-x-5 gap-y-5">
+<label class="block">
+<span class="field-label">Trade you offer</span>
+<select class="w-full" id="field-service">
+<option value="">Loading trades…</option>
+</select>
+</label>
+<label class="block">
+<span class="field-label">Starting price</span>
+<input class="w-full" id="field-price" inputmode="numeric" max="10000" min="50" type="number"/>
+<span class="field-hint">Between &#8377;50 and &#8377;10,000. This is what a booking charges.</span>
+</label>
+</div>
+<div class="flex flex-wrap items-center gap-4 mt-6">
+<button class="btn btn-primary" id="worker-save" type="submit">Save listing</button>
+<p class="hidden font-body-md text-[14px]" id="worker-message"></p>
+</div>
+</form>
+
+<div class="flex items-center justify-between gap-6 mt-8 pt-6 border-t border-outline-variant max-w-xl">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface">Taking new jobs</h3>
+<p class="font-body-md text-[14px] text-on-surface-variant mt-0.5" id="availability-text">Available for new jobs</p>
+</div>
+<label class="switch">
+<input checked class="toggle-checkbox" id="availability-toggle" type="checkbox"/>
+<span class="toggle-label"></span>
+</label>
+</div>
+
+<p class="hidden notice mt-6 max-w-xl" id="worker-pending-note">A federation admin reviews new listings. Customers can still find and book you while this is pending.</p>
+</section>
+
+<section class="mt-12 pt-10 border-t border-outline-variant" id="password">
+<div class="rule-heading mb-1">
+<h2 class="font-title-md text-title-md text-on-surface">Change password</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-[56ch]">You need your current password, so a stolen session cannot lock you out.</p>
+
+<form class="max-w-md" id="password-form" novalidate>
+<div class="grid gap-5">
+<label class="block">
+<span class="field-label">Current password</span>
+<input autocomplete="current-password" class="w-full" id="field-current" required type="password"/>
+</label>
+<label class="block">
+<span class="field-label">New password</span>
+<input autocomplete="new-password" class="w-full" id="field-new" minlength="8" required type="password"/>
+<span class="field-hint">At least 8 characters.</span>
+</label>
+<label class="block">
+<span class="field-label">Confirm new password</span>
+<input autocomplete="new-password" class="w-full" id="field-confirm" minlength="8" required type="password"/>
+</label>
+</div>
+<div class="flex flex-wrap items-center gap-4 mt-6">
+<button class="btn btn-secondary" id="password-save" type="submit">Update password</button>
+<p class="hidden font-body-md text-[14px]" id="password-message"></p>
+</div>
+</form>
+</section>
+
+</div>
+
+<!-- ========================== Right: the record ==========================
+     The one bounded object on the page, because a booking list is a record
+     you read rather than a form you fill in. Sticky on desktop. -->
+<div class="lg:col-span-5 min-w-0">
+<section class="lg:sticky lg:top-[80px]" id="bookings">
+<div class="rule-heading mb-1">
+<h2 class="font-title-md text-title-md text-on-surface">My bookings</h2>
+<button class="btn btn-quiet btn-sm flex-shrink-0" id="refresh-bookings" type="button">Refresh</button>
+</div>
+<p class="font-body-md text-[14px] text-on-surface-variant mb-4" id="bookings-count">Loading…</p>
+
+<div class="max-h-[34rem] overflow-y-auto" id="bookings-list">
+<p class="font-body-md text-[14px] text-on-surface-variant">Loading your bookings…</p>
+</div>
+
+<a class="btn btn-primary w-full mt-5 no-underline" href="dashboard.html">Book a service</a>
+</section>
+</div>
+
+</div>
+</main>
+
+<!-- Mobile bottom bar — filled in by js/nav.js -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center gap-1 px-2 py-2 md:hidden bg-surface-container-lowest border-t border-outline-variant" data-nav="bottom"></nav>
+
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/account.js"></script>
+<script src="js/chat-widget.js"></script>
+</body>
+</html>

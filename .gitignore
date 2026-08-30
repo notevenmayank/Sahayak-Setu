@@ -1,0 +1,42 @@
+# ─────────────────────────────────────────────────────────────────
+# Root .gitignore
+#
+# server/.gitignore already covers the same ground for the server
+# folder, but git only applies a nested .gitignore to its OWN folder
+# and below. If you ever run "git init" HERE (at the project root),
+# these rules are the ones that protect you. Keeping both means the
+# secrets stay out of git no matter where the repo starts.
+# ─────────────────────────────────────────────────────────────────
+
+# Real secrets: JWT signing key and OpenAI API key.
+# Only .env.example belongs in git.
+.env
+.env.*
+!.env.example
+server/.env
+server/.env.*
+!server/.env.example
+
+# The SQLite database — real accounts and bcrypt password hashes.
+server/data/
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Installed packages — "npm install" recreates them.
+node_modules/
+server/node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp

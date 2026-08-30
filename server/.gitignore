@@ -1,0 +1,18 @@
+# Never commit these.
+
+# Installed packages — anyone can recreate them with "npm install".
+node_modules/
+
+# Your real secrets live here (JWT secret, OpenAI API key).
+# Only .env.example belongs in git.
+.env
+
+# The SQLite database — it holds real user accounts and password hashes.
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Logs
+*.log
+npm-debug.log*
