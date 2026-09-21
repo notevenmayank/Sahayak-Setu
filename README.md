@@ -1,11 +1,29 @@
 # Sahayak Setu (सहायक सेतु)
 ### Intelligent Fair-Trade Worker Service & Safety Ecosystem
 
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
-[![Database](https://img.shields.io/badge/database-SQLite%203-blue.svg)](https://github.com/WiseLibs/better-sqlite3)
-[![AI Engine](https://img.shields.io/badge/AI-Gemini%203.6%20Flash-orange.svg)](https://ai.google.dev/)
-[![Mapping](https://img.shields.io/badge/maps-MapLibre%20GL%20JS-blueviolet.svg)](https://maplibre.org/)
-[![Tests](https://img.shields.io/badge/tests-182%20passed-success.svg)](#-testing)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://sahayak-setu-production-e9e7.up.railway.app)
+[![Node.js Version](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Database](https://img.shields.io/badge/database-SQLite_3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
+[![AI Engine](https://img.shields.io/badge/AI_Engine-Groq_Cloud-F05032?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com/)
+[![Tests](https://img.shields.io/badge/tests-230_passed-success.svg?style=for-the-badge)](#-testing)
+
+> 🌐 **Live Website**: [https://sahayak-setu-production-e9e7.up.railway.app](https://sahayak-setu-production-e9e7.up.railway.app)  
+> 🔑 **Demo Credentials**:
+> - **Admin**: `admin@demo.com` / `demo1234`
+> - **Customer**: `customer@demo.com` / `demo1234`
+> - **Worker**: `worker@demo.com` / `demo1234`
+
+---
+
+## 📸 Screenshots & UI Tour
+
+| Homepage & Fair-Trade Rates | Worker Register & Demand Heatmap |
+| :---: | :---: |
+| ![Homepage](screenshots/landing.png) | ![Dashboard & Maps](screenshots/dashboard.png) |
+
+| Direct Worker Booking Flow | Role-Based Authentication & Demo Logins |
+| :---: | :---: |
+| ![Booking Flow](screenshots/booking.png) | ![Login Portal](screenshots/login.png) |
 
 ---
 
