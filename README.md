@@ -1,13 +1,13 @@
 # Sahayak Setu (सहायक सेतु)
 ### Intelligent Fair-Trade Worker Service & Safety Ecosystem
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://sahayak-setu-production-e9e7.up.railway.app)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://sahayak-setu.onrender.com)
 [![Node.js Version](https://img.shields.io/badge/Node.js-20.x-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Database](https://img.shields.io/badge/database-SQLite_3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
 [![AI Engine](https://img.shields.io/badge/AI_Engine-Groq_Cloud-F05032?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com/)
 [![Tests](https://img.shields.io/badge/tests-230_passed-success.svg?style=for-the-badge)](#-testing)
 
-> 🌐 **Live Website**: [https://sahayak-setu-production-e9e7.up.railway.app](https://sahayak-setu-production-e9e7.up.railway.app)  
+> 🌐 **Live Website**: [https://sahayak-setu.onrender.com](https://sahayak-setu.onrender.com)  
 > 🔑 **Demo Credentials**:
 > - **Admin**: `admin@demo.com` / `demo1234`
 > - **Customer**: `customer@demo.com` / `demo1234`
