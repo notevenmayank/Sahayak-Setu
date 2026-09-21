@@ -100,6 +100,132 @@
 </div>
 </dl>
 
+<!-- ======================= WORKER PROTECTION CENTER ===================== -->
+<section class="mb-12" id="protection-center">
+  <div class="rule-heading mb-2">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary text-[22px]">shield_person</span>
+      <h2 class="font-title-md text-title-md text-on-surface">Worker Protection Center</h2>
+    </div>
+    <span class="eyebrow">Welfare & Safety Hub</span>
+  </div>
+  <p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-[65ch]">Real-time fatigue scoring, micro-insurance protection, emergency SOS response, and live demand intelligence.</p>
+
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <!-- Card 1: Safety Score & Workload -->
+    <div class="panel p-5 flex flex-col justify-between" id="card-safety-score">
+      <div>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="eyebrow">Workload & Fatigue</p>
+            <h3 class="font-title-md text-[18px] text-on-surface mt-0.5">Safety Score</h3>
+          </div>
+          <span class="badge badge-good text-[13px]" id="safety-status-badge">SAFE</span>
+        </div>
+        <div class="flex items-baseline gap-2 mt-4">
+          <span class="figure text-[32px] leading-none font-semibold text-primary" id="safety-score-number">100%</span>
+          <span class="font-body-md text-[13px] text-outline">workload rating</span>
+        </div>
+        <p class="font-body-md text-[13px] text-on-surface-variant mt-2" id="safety-recommendation">Your workload is within a safe range.</p>
+        <div class="mt-4 pt-3 border-t border-outline-variant grid grid-cols-2 gap-2 text-[12.5px]">
+          <div><span class="text-outline">Worked today:</span> <strong id="safety-working-hours">0h</strong></div>
+          <div><span class="text-outline">Consecutive:</span> <strong id="safety-consecutive">0</strong></div>
+        </div>
+      </div>
+      <div class="mt-4 pt-3 border-t border-outline-variant flex gap-2">
+        <button class="btn btn-secondary btn-sm flex-1" id="btn-take-break" type="button">Take Break</button>
+        <button class="btn btn-quiet btn-sm flex-1 hidden" id="btn-end-break" type="button">End Break</button>
+      </div>
+    </div>
+
+    <!-- Card 2: Sahayak Suraksha Insurance -->
+    <div class="panel p-5 flex flex-col justify-between" id="suraksha">
+      <div>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="eyebrow">Partner Protection Plan</p>
+            <h3 class="font-title-md text-[18px] text-on-surface mt-0.5">Sahayak Suraksha</h3>
+          </div>
+          <span class="badge badge-wait" id="insurance-status-badge">Checking…</span>
+        </div>
+        <p class="font-body-md text-[13px] text-on-surface-variant mt-3">
+          Accidental & work-injury protection prototype up to <strong>₹2,00,000</strong> coverage at just <strong>₹49/month</strong>.
+        </p>
+        <dl class="spec mt-3 text-[12.5px]" id="insurance-details-dl">
+          <div><dt>Plan</dt><dd>Basic Worker Protection</dd></div>
+          <div><dt>Policy ID</dt><dd id="insurance-policy-num">&mdash;</dd></div>
+        </dl>
+      </div>
+      <div class="mt-4 pt-3 border-t border-outline-variant">
+        <button class="btn btn-primary btn-sm w-full" id="btn-enroll-insurance" type="button">Enroll in Suraksha</button>
+        <p class="field-hint text-center mt-1.5 text-[11px]">Affordable prototype cooperative coverage</p>
+      </div>
+    </div>
+
+    <!-- Card 3: Location Sharing & Emergency SOS -->
+    <div class="panel p-5 flex flex-col justify-between">
+      <div>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="eyebrow">Live Dispatch</p>
+            <h3 class="font-title-md text-[18px] text-on-surface mt-0.5">Location & SOS</h3>
+          </div>
+          <span class="badge badge-good hidden" id="loc-sharing-badge">Live Active</span>
+        </div>
+
+        <!-- Location Sharing Switch -->
+        <div class="flex items-center justify-between gap-4 mt-3 py-2 border-b border-outline-variant">
+          <div>
+            <p class="font-label-md text-label-md text-on-surface">Share Live Location</p>
+            <p class="font-body-md text-[12px] text-outline mt-0.5" id="loc-status-subtext">Off (browser geolocation)</p>
+          </div>
+          <label class="switch">
+            <input class="toggle-checkbox" id="loc-share-toggle" type="checkbox"/>
+            <span class="toggle-label"></span>
+          </label>
+        </div>
+
+        <!-- Emergency SOS Button -->
+        <div class="mt-4">
+          <p class="font-label-md text-label-md text-error flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">warning</span> Emergency Action
+          </p>
+          <button class="btn w-full mt-2 bg-[#9c2f22] hover:bg-[#7a241a] text-white border-0 font-bold" id="btn-trigger-sos" type="button">
+            🚨 Trigger Emergency SOS
+          </button>
+          <p class="field-hint text-center mt-1.5 text-[11px]" id="sos-status-msg">Logs emergency incident & alerts federation</p>
+        </div>
+      </div>
+
+      <!-- Claim assistance prompt (if incident exists) -->
+      <div class="mt-3 pt-2 border-t border-outline-variant hidden" id="incident-claim-box">
+        <p class="font-label-sm text-error font-semibold" id="recent-incident-label">Emergency Incident Logged</p>
+        <button class="btn btn-secondary btn-sm w-full mt-1.5 text-[12px]" id="btn-start-claim" type="button">Start Insurance Claim Assistance</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Demand Insights Banner: Where Demand is High -->
+  <div class="panel p-5 mt-6" id="demand-insights-box">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+      <div>
+        <p class="eyebrow">Real-Time Demand Intelligence</p>
+        <h3 class="font-title-md text-title-md text-on-surface">Where Demand is High Near You</h3>
+      </div>
+      <a class="btn btn-quiet btn-sm no-underline" href="dashboard.html">View Demand Map</a>
+    </div>
+    <p class="font-body-md text-body-md text-on-surface-variant mb-4 max-w-[70ch]">Derived from real customer service requests and complaints across cooperative service clusters. Position yourself where households need help most.</p>
+    <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-3" id="demand-insights-grid">
+      <div class="well p-3"><span class="shimmer" style="height:20px;width:80%;"></span></div>
+      <div class="well p-3"><span class="shimmer" style="height:20px;width:70%;"></span></div>
+      <div class="well p-3"><span class="shimmer" style="height:20px;width:85%;"></span></div>
+      <div class="well p-3"><span class="shimmer" style="height:20px;width:60%;"></span></div>
+    </div>
+  </div>
+</section>
+
 <div class="grid lg:grid-cols-12 gap-10 lg:gap-14">
 
 <!-- ========================= Left: the work =============================

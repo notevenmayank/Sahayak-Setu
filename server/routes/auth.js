@@ -16,7 +16,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ROLES = ['customer', 'worker', 'admin'];
 
 function publicUser(user) {
-  return { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role };
+  return { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, status: user.status || 'Active' };
 }
 
 // POST /api/auth/register
@@ -82,6 +82,13 @@ router.post('/login', (req, res) => {
   if (!ok) {
     audit('user.login_failed', { entity: 'user', details: { email }, ip: req.ip });
     return res.status(401).json({ error: 'Incorrect email or password.' });
+  }
+
+  if (user.status === 'Suspended') {
+    audit('user.login_blocked_suspended', { userId: user.id, entity: 'user', entityId: user.id, ip: req.ip });
+    return res.status(403).json({
+      error: 'Your account has been suspended. Please contact the cooperative admin.'
+    });
   }
 
   if (expectedRole && expectedRole !== user.role) {

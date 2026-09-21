@@ -22,6 +22,8 @@ const workerRoutes = require('./routes/workers');
 const bookingRoutes = require('./routes/bookings');
 const adminRoutes = require('./routes/admin');
 const chatRoutes = require('./routes/chat');
+const mapRoutes = require('./routes/maps');
+const safetyRoutes = require('./routes/safety');
 const ai = require('./services/ai');
 
 const app = express();
@@ -74,11 +76,13 @@ app.get('/api/health', (_req, res) => {
   const demo = db
     .prepare("SELECT COUNT(*) AS n FROM users WHERE email IN ('customer@demo.com','worker@demo.com','admin@demo.com')")
     .get().n === 3;
-  res.json({ ok: true, ai: ai.hasKey() ? 'openai' : 'fallback', demo, counts });
+  res.json({ ok: true, ai: ai.getActiveProvider(), demo, counts });
 });
 
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/maps', mapRoutes);
+app.use('/api', safetyRoutes);
 app.use('/api', workerRoutes);
 app.use('/api', bookingRoutes);
 app.use('/api/admin', adminRoutes);
@@ -108,12 +112,21 @@ app.use((err, _req, res, _next) => {
 
 app.listen(PORT, () => {
   const seeded = db.prepare('SELECT COUNT(*) AS n FROM users').get().n > 0;
+  const provider = ai.getActiveProvider();
+  const aiLabel = provider === 'groq'
+    ? `Groq (${process.env.GROQ_MODEL || 'qwen/qwen3.8-27b'})`
+    : provider === 'grok'
+    ? `Grok (${process.env.GROK_MODEL || 'grok-2-latest'})`
+    : provider === 'gemini'
+    ? `Gemini (${process.env.GEMINI_MODEL || 'gemini-1.5-flash'})`
+    : 'offline fallback — add GROQ_API_KEY, GROK_API_KEY or GEMINI_API_KEY to .env for real AI';
+
   console.log(`
   SahayakSetu server running
   ──────────────────────────────────────────
   Open        http://localhost:${PORT}
   API health  http://localhost:${PORT}/api/health
-  AI mode     ${ai.hasKey() ? `OpenAI (${process.env.OPENAI_MODEL || 'gpt-4o-mini'})` : 'offline fallback — add OPENAI_API_KEY to .env for real AI'}
+  AI mode     ${aiLabel}
   Database    ${seeded ? 'ready' : 'EMPTY — run "npm run seed" in another terminal'}
   ──────────────────────────────────────────
 `);

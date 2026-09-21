@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: sahayak-setu
+    runtime: node
+    rootDir: server
+    buildCommand: npm install && node seed.js
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SEED_DEMO
+        value: "true"
+      - key: GROQ_MODEL
+        value: qwen/qwen3.8-27b
+      - key: GROQ_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true

@@ -12,14 +12,16 @@
 window.API = (function () {
   'use strict';
 
-  // When the page is served by the Node server, the API is on the same origin.
-  // When you open it through Live Server (port 5500) or as a file, point at 4000.
-  const SAME_ORIGIN_PORTS = ['4000'];
+  // When the page is served by the Node server (locally or in cloud deployment like Railway/Render),
+  // the frontend and API share the same origin, so BASE is empty string.
+  // Only when opening through Live Server (port 5500/3000/5173) or file://, point at 4000.
   const BASE = (function () {
     const { protocol, hostname, port } = window.location;
     if (protocol === 'file:') return 'http://localhost:4000';
-    if (SAME_ORIGIN_PORTS.includes(port)) return '';
-    return `http://${hostname || 'localhost'}:4000`;
+    if (['5500', '3000', '5173'].includes(port)) {
+      return `http://${hostname || 'localhost'}:4000`;
+    }
+    return '';
   })();
 
   const TOKEN_KEY = 'sahayak_token';
@@ -173,9 +175,15 @@ window.API = (function () {
   const admin = {
     stats: () => get('/api/admin/stats').then((d) => d.stats),
     analytics: () => get('/api/admin/analytics').then((d) => d.analytics),
-    workers: () => get('/api/admin/workers').then((d) => d.workers),
+    workers: (params) => get('/api/admin/workers' + qs(params)).then((d) => d.workers),
+    blacklistWorker: (id, reason) => post(`/api/admin/workers/${id}/blacklist`, { reason }).then((d) => d.worker),
+    unblacklistWorker: (id) => post(`/api/admin/workers/${id}/unblacklist`).then((d) => d.worker),
     updateWorker: (id, changes) => patch(`/api/admin/workers/${id}`, changes).then((d) => d.worker),
-    audit: (limit) => get('/api/admin/audit' + qs({ limit })).then((d) => d.entries)
+    bookings: (params) => get('/api/admin/bookings' + qs(params)).then((d) => d.bookings),
+    cancelBooking: (id, reason) => post(`/api/admin/bookings/${id}/cancel`, { reason }).then((d) => d.booking),
+    users: (params) => get('/api/admin/users' + qs(params)).then((d) => d.users),
+    setUserStatus: (id, status, reason) => patch(`/api/admin/users/${id}/status`, { status, reason }).then((d) => d.user),
+    audit: (limit, action, q) => get('/api/admin/audit' + qs({ limit, action, q })).then((d) => d.entries)
   };
 
   const chat = {
@@ -184,5 +192,37 @@ window.API = (function () {
     health: () => get('/api/chat/health')
   };
 
-  return { BASE, session, auth, services, workers, bookings, admin, chat, get, post, patch, health: () => get('/api/health') };
+  const maps = {
+    workers: () => get('/api/maps/workers').then((d) => d.workers),
+    updateMyLocation: (latitude, longitude, accuracy) =>
+      patch('/api/maps/workers/me/location', { latitude, longitude, accuracy }),
+    workerLocation: (workerId, bookingCode) =>
+      get(`/api/maps/workers/${workerId}/location` + qs({ bookingCode })),
+    complaintHeatmap: (filters) =>
+      get('/api/maps/complaints/heatmap' + qs(filters)),
+    geocode: (address) => get('/api/maps/geocode' + qs({ address })).then((d) => d.results),
+    route: (start, end) => get('/api/maps/route' + qs({
+      startLat: start.lat, startLng: start.lng,
+      endLat: end.lat, endLng: end.lng
+    }))
+  };
+
+  const insurance = {
+    getPlan: () => get('/api/safety/insurance/plan').then((d) => d.plan),
+    status: () => get('/api/safety/insurance/status'),
+    enroll: (planName) => post('/api/safety/insurance/enroll', { planName }),
+    claim: (incidentId, description) => post('/api/safety/insurance/claim', { incidentId, description })
+  };
+
+  const safety = {
+    getMySafety: () => get('/api/workers/me/safety'),
+    sos: (details) => post('/api/safety/sos', details || {}),
+    myIncidents: () => get('/api/safety/incidents/me').then((d) => d.incidents),
+    demandInsights: (service) => get('/api/safety/demand-insights' + qs({ service })).then((d) => d.insights),
+    startBreak: () => post('/api/workers/me/breaks/start'),
+    endBreak: () => post('/api/workers/me/breaks/end'),
+    notifications: () => get('/api/workers/me/notifications').then((d) => d.notifications)
+  };
+
+  return { BASE, session, auth, services, workers, bookings, admin, chat, maps, insurance, safety, get, post, patch, health: () => get('/api/health') };
 })();

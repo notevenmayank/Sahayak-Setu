@@ -38,7 +38,20 @@ function rateLimited(key) {
 
 // GET /api/chat/health — lets the widget show which brain is active
 router.get('/health', (_req, res) => {
-  res.json({ ok: true, ai: ai.hasKey() ? 'openai' : 'fallback' });
+  const provider = ai.getActiveProvider();
+  const model = provider === 'groq'
+    ? (process.env.GROQ_MODEL || (process.env.GROK_MODEL && !process.env.GROK_MODEL.startsWith('grok') ? process.env.GROK_MODEL : 'qwen/qwen3.8-27b'))
+    : provider === 'grok'
+    ? (process.env.GROK_MODEL || 'grok-2-latest')
+    : provider === 'gemini'
+    ? (process.env.GEMINI_MODEL || 'gemini-1.5-flash')
+    : undefined;
+
+  res.json({
+    ok: true,
+    ai: provider,
+    ...(model ? { model } : {})
+  });
 });
 
 // GET /api/chat/history?sessionId=...
@@ -86,7 +99,7 @@ router.post('/', optionalAuth, async (req, res) => {
     .reverse();
 
   try {
-    const { reply, source, warning } = await ai.getReply(history, req.user || null);
+    const { reply, source, actions, warning } = await ai.getReply(history, req.user || null);
 
     db.prepare('INSERT INTO chat_messages (session_id, user_id, role, content) VALUES (?, ?, ?, ?)')
       .run(sessionId, userId, 'assistant', reply);
@@ -100,6 +113,7 @@ router.post('/', optionalAuth, async (req, res) => {
       reply,
       sessionId,
       source,
+      actions: actions || [],
       ...(warning && process.env.NODE_ENV !== 'production' ? { warning } : {})
     });
   } catch (err) {

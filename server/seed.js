@@ -41,25 +41,31 @@ const SERVICES = [
 ];
 
 const WORKERS = [
-  { code: 'SHK-9024', name: 'Ramesh Kumar',  service: 'Electrician', rating: 4.8, distance_km: 1.2, price_from: 450, verification: 'Verified',             availability: 'Available',   jobs_done: 214, phone: '9810054321' },
-  { code: 'SHK-9131', name: 'Amit Sharma',   service: 'Electrician', rating: 4.6, distance_km: 2.1, price_from: 400, verification: 'Pending Verification', availability: 'Available',   jobs_done: 96,  phone: '9810054322' },
-  { code: 'SHK-9145', name: 'Rajesh Singh',  service: 'Plumber',     rating: 4.9, distance_km: 0.8, price_from: 350, verification: 'Verified',             availability: 'Available',   jobs_done: 301, phone: '9810054323' },
-  { code: 'SHK-9152', name: 'Mohit Kumar',   service: 'Plumber',     rating: 4.7, distance_km: 1.7, price_from: 400, verification: 'Verified',             availability: 'Available',   jobs_done: 142, phone: '9810054324' },
-  { code: 'SHK-9174', name: 'Sunita Devi',   service: 'Cleaner',     rating: 4.8, distance_km: 1.0, price_from: 300, verification: 'Verified',             availability: 'Unavailable', jobs_done: 188, phone: '9810054325' },
-  { code: 'SHK-9208', name: 'Vikram Rawat',  service: 'Driver',      rating: 4.9, distance_km: 1.5, price_from: 500, verification: 'Verified',             availability: 'Available',   jobs_done: 260, phone: '9810054326' },
-  { code: 'SHK-9233', name: 'Imran Qureshi', service: 'Carpenter',   rating: 4.7, distance_km: 2.4, price_from: 400, verification: 'Verified',             availability: 'Available',   jobs_done: 74,  phone: '9810054327' },
-  { code: 'SHK-9260', name: 'Lakshmi Nair',  service: 'Painter',     rating: 4.6, distance_km: 3.1, price_from: 380, verification: 'Pending Verification', availability: 'Available',   jobs_done: 41,  phone: '9810054328' }
+  { code: 'SHK-9024', name: 'Ramesh Kumar',  service: 'Electrician', rating: 4.8, distance_km: 1.2, price_from: 450, verification: 'Verified',             availability: 'Available',   jobs_done: 214, phone: '9810054321', latitude: 28.6270, longitude: 77.3740 },
+  { code: 'SHK-9131', name: 'Amit Sharma',   service: 'Electrician', rating: 4.6, distance_km: 2.1, price_from: 400, verification: 'Pending Verification', availability: 'Available',   jobs_done: 96,  phone: '9810054322', latitude: 28.6320, longitude: 77.3680 },
+  { code: 'SHK-9145', name: 'Rajesh Singh',  service: 'Plumber',     rating: 4.9, distance_km: 0.8, price_from: 350, verification: 'Verified',             availability: 'Available',   jobs_done: 301, phone: '9810054323', latitude: 28.6250, longitude: 77.3790 },
+  { code: 'SHK-9152', name: 'Mohit Kumar',   service: 'Plumber',     rating: 4.7, distance_km: 1.7, price_from: 400, verification: 'Verified',             availability: 'Available',   jobs_done: 142, phone: '9810054324', latitude: 28.6360, longitude: 77.3710 },
+  { code: 'SHK-9174', name: 'Sunita Devi',   service: 'Cleaner',     rating: 4.8, distance_km: 1.0, price_from: 300, verification: 'Verified',             availability: 'Unavailable', jobs_done: 188, phone: '9810054325', latitude: 28.6210, longitude: 77.3820 },
+  { code: 'SHK-9208', name: 'Vikram Rawat',  service: 'Driver',      rating: 4.9, distance_km: 1.5, price_from: 500, verification: 'Verified',             availability: 'Available',   jobs_done: 260, phone: '9810054326', latitude: 28.6290, longitude: 77.3650 },
+  { code: 'SHK-9233', name: 'Imran Qureshi', service: 'Carpenter',   rating: 4.7, distance_km: 2.4, price_from: 400, verification: 'Verified',             availability: 'Available',   jobs_done: 74,  phone: '9810054327', latitude: 28.6180, longitude: 77.3770 },
+  { code: 'SHK-9260', name: 'Lakshmi Nair',  service: 'Painter',     rating: 4.6, distance_km: 3.1, price_from: 380, verification: 'Pending Verification', availability: 'Available',   jobs_done: 41,  phone: '9810054328', latitude: 28.6340, longitude: 77.3850 }
 ];
 
 function isEmpty() {
-  // Services are seeded in every mode, so they — not users — are the reliable
-  // "has this database been filled yet?" marker. (In production the demo
-  // users are skipped, so a users-count check would re-seed on every boot.)
   return db.prepare('SELECT COUNT(*) AS n FROM services').get().n === 0;
 }
 
 function wipe() {
   db.exec(`
+    DELETE FROM insurance_claims;
+    DELETE FROM worker_incidents;
+    DELETE FROM worker_insurance;
+    DELETE FROM service_complaints;
+    DELETE FROM worker_locations;
+    DELETE FROM notifications;
+    DELETE FROM worker_breaks;
+    DELETE FROM worker_safety_metrics;
+    DELETE FROM app_settings;
     DELETE FROM chat_messages;
     DELETE FROM audit_log;
     DELETE FROM bookings;
@@ -67,7 +73,9 @@ function wipe() {
     DELETE FROM services;
     DELETE FROM users;
     DELETE FROM sqlite_sequence WHERE name IN
-      ('users','services','workers','bookings','chat_messages','audit_log');
+      ('users','services','workers','bookings','chat_messages','audit_log',
+       'worker_safety_metrics','worker_breaks','notifications',
+       'worker_locations','service_complaints','worker_insurance','worker_incidents','insurance_claims');
   `);
 }
 
@@ -85,21 +93,100 @@ const run = db.transaction(() => {
   }
 
   const insertService = db.prepare(
-    `INSERT INTO services (name, icon, base_price, demand) VALUES (?, ?, ?, ?)`
+    `INSERT INTO services (name, icon, base_price, demand, risk_level) VALUES (?, ?, ?, ?, ?)`
   );
-  for (const s of SERVICES) insertService.run(s.name, s.icon, s.base_price, s.demand);
+  const SERVICE_RISK = {
+    Electrician: 'HIGH',
+    Plumber: 'MEDIUM',
+    Cleaner: 'LOW',
+    Driver: 'MEDIUM',
+    Carpenter: 'MEDIUM',
+    Painter: 'MEDIUM'
+  };
+  for (const s of SERVICES) {
+    insertService.run(s.name, s.icon, s.base_price, s.demand, SERVICE_RISK[s.name] || 'MEDIUM');
+  }
+  db.prepare(`INSERT OR REPLACE INTO app_settings (key, value) VALUES ('safety.risk_seeded', 'true')`).run();
 
   const insertWorker = db.prepare(
     `INSERT INTO workers (code, user_id, name, service, phone, rating, jobs_done,
-                          distance_km, price_from, verification, availability)
+                          distance_km, price_from, verification, availability, latitude, longitude)
      VALUES (@code, @user_id, @name, @service, @phone, @rating, @jobs_done,
-             @distance_km, @price_from, @verification, @availability)`
+             @distance_km, @price_from, @verification, @availability, @latitude, @longitude)`
   );
+  const insertLocation = db.prepare(
+    `INSERT INTO worker_locations (worker_id, latitude, longitude, accuracy, updated_at)
+     VALUES (?, ?, ?, ?, datetime('now'))`
+  );
+
   const workerIds = {};
   for (const w of WORKERS) {
     // Link the demo worker login to Ramesh Kumar's worker profile.
     const user_id = w.code === 'SHK-9024' ? (userIds['worker@demo.com'] || null) : null;
-    workerIds[w.name] = insertWorker.run({ ...w, user_id }).lastInsertRowid;
+    const wid = insertWorker.run({ ...w, user_id }).lastInsertRowid;
+    workerIds[w.name] = wid;
+    if (w.latitude && w.longitude) {
+      insertLocation.run(wid, w.latitude, w.longitude, 10);
+    }
+  }
+
+  // Realistic sample complaint / service demand points for heatmap & demand insights
+  const insertComplaint = db.prepare(
+    `INSERT INTO service_complaints (service, latitude, longitude, area, status, created_at)
+     VALUES (?, ?, ?, ?, ?, datetime('now', ?))`
+  );
+  const COMPLAINT_DATA = [
+    // Sector 62 (High demand for Electrician and Plumber)
+    { service: 'Electrician', lat: 28.6275, lng: 77.3735, area: 'Sector 62', shift: '-1 hour' },
+    { service: 'Electrician', lat: 28.6285, lng: 77.3750, area: 'Sector 62', shift: '-3 hour' },
+    { service: 'Electrician', lat: 28.6265, lng: 77.3720, area: 'Sector 62', shift: '-5 hour' },
+    { service: 'Plumber',     lat: 28.6290, lng: 77.3760, area: 'Sector 62', shift: '-2 hour' },
+    { service: 'Plumber',     lat: 28.6270, lng: 77.3745, area: 'Sector 62', shift: '-6 hour' },
+    { service: 'Cleaner',     lat: 28.6280, lng: 77.3730, area: 'Sector 62', shift: '-12 hour' },
+
+    // Sector 15 (High demand for Plumber and Carpenter)
+    { service: 'Plumber',     lat: 28.6310, lng: 77.3670, area: 'Sector 15', shift: '-2 hour' },
+    { service: 'Plumber',     lat: 28.6325, lng: 77.3690, area: 'Sector 15', shift: '-4 hour' },
+    { service: 'Plumber',     lat: 28.6300, lng: 77.3660, area: 'Sector 15', shift: '-7 hour' },
+    { service: 'Carpenter',   lat: 28.6315, lng: 77.3685, area: 'Sector 15', shift: '-8 hour' },
+    { service: 'Electrician', lat: 28.6330, lng: 77.3700, area: 'Sector 15', shift: '-14 hour' },
+
+    // Sector 18 (Commercial & residential demand: Cleaner & Electrician)
+    { service: 'Cleaner',     lat: 28.6220, lng: 77.3810, area: 'Sector 18', shift: '-1 hour' },
+    { service: 'Cleaner',     lat: 28.6235, lng: 77.3830, area: 'Sector 18', shift: '-3 hour' },
+    { service: 'Cleaner',     lat: 28.6205, lng: 77.3800, area: 'Sector 18', shift: '-5 hour' },
+    { service: 'Electrician', lat: 28.6225, lng: 77.3815, area: 'Sector 18', shift: '-10 hour' },
+
+    // Indirapuram (High demand for Painter & Plumber)
+    { service: 'Painter',     lat: 28.6345, lng: 77.3840, area: 'Indirapuram', shift: '-4 hour' },
+    { service: 'Painter',     lat: 28.6355, lng: 77.3860, area: 'Indirapuram', shift: '-9 hour' },
+    { service: 'Plumber',     lat: 28.6335, lng: 77.3830, area: 'Indirapuram', shift: '-11 hour' },
+
+    // Sector 50 (Demand for Driver & Cleaner)
+    { service: 'Driver',      lat: 28.6295, lng: 77.3640, area: 'Sector 50', shift: '-2 hour' },
+    { service: 'Driver',      lat: 28.6305, lng: 77.3665, area: 'Sector 50', shift: '-6 hour' },
+    { service: 'Cleaner',     lat: 28.6285, lng: 77.3630, area: 'Sector 50', shift: '-15 hour' }
+  ];
+
+  for (const c of COMPLAINT_DATA) {
+    insertComplaint.run(c.service, c.lat, c.lng, c.area, 'Open', c.shift);
+  }
+
+  // Seed demo insurance for demo worker Ramesh Kumar
+  const rameshId = workerIds['Ramesh Kumar'];
+  if (rameshId) {
+    db.prepare(
+      `INSERT INTO worker_insurance (worker_id, plan_name, monthly_premium, coverage_amount, status,
+                                     enrolled_at, renewal_date, provider_name, policy_number)
+       VALUES (?, ?, ?, ?, 'Active', datetime('now', '-15 days'), date('now', '+15 days'), ?, ?)`
+    ).run(
+      rameshId,
+      'Basic Worker Protection',
+      49,
+      200000,
+      'Sahayak Suraksha Trust (Prototype Partner)',
+      'SURAKSHA-2026-9024'
+    );
   }
 
   // A few bookings so the dashboards are not empty on first load. These hang
@@ -148,6 +235,12 @@ if (!isEmpty() && !FORCE) {
 
 if (FORCE) {
   wipe();
+  db.exec(`
+    INSERT OR IGNORE INTO app_settings (key, value) VALUES
+      ('safety.assign_high_risk', 'block_non_emergency'),
+      ('safety.emergency_allow_high_risk', 'true'),
+      ('safety.caution_deprioritize', 'true');
+  `);
   console.log('Wiped existing data.');
 }
 

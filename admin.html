@@ -15,154 +15,531 @@
 </head>
 <body class="flex min-h-screen bg-background font-body-md text-on-surface">
 
-<!-- ============================== Sidebar ===============================
-     Was a shadowed rail with a round diversity_3 badge on top. It is now a
-     plain column with a single hairline down its right edge — a filing
-     divider, not a floating panel. js/nav.js fills the links and user chip. -->
-<nav class="hidden md:flex flex-col h-screen sticky top-0 w-60 flex-shrink-0 bg-surface-container-low border-r border-outline-variant px-5 py-6 z-40">
-<div class="mb-8">
-<a class="no-underline" href="landing.html">
+<!-- ============================== Sidebar =============================== -->
+<nav class="hidden md:flex flex-col h-screen sticky top-0 w-64 flex-shrink-0 bg-surface-container-low border-r border-outline-variant px-4 py-6 z-40">
+<div class="mb-6 px-2">
+<a class="no-underline block" href="landing.html">
 <span class="font-headline-lg text-[19px] leading-none text-primary block">SahayakSetu</span>
-<span class="eyebrow mt-1.5 block">Cooperative Federation</span>
+<span class="eyebrow mt-1.5 block">Federation Admin</span>
 </a>
 </div>
-<!-- Filled in by js/nav.js based on who is signed in. -->
-<div class="space-y-1 flex-grow" data-nav="side"></div>
-<div class="mt-auto flex items-center gap-3 pt-4 border-t border-outline-variant" data-nav="user"></div>
+
+<!-- Navigation Tabs -->
+<div class="space-y-1 flex-grow overflow-y-auto" id="admin-sidebar-nav">
+<button class="nav-side-item admin-nav-item nav-side-active flex items-center gap-3 py-2.5 px-3 w-full text-left text-on-surface font-semibold rounded transition-colors" data-tab="dashboard" type="button">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</button>
+
+<button class="nav-side-item admin-nav-item flex items-center gap-3 py-2.5 px-3 w-full text-left text-on-surface-variant hover:text-on-surface rounded transition-colors" data-tab="workers" type="button">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+<span class="font-label-md text-label-md">Workers</span>
+</button>
+
+<button class="nav-side-item admin-nav-item flex items-center gap-3 py-2.5 px-3 w-full text-left text-on-surface-variant hover:text-on-surface rounded transition-colors" data-tab="bookings" type="button">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+<span class="font-label-md text-label-md">Bookings</span>
+</button>
+
+<button class="nav-side-item admin-nav-item flex items-center gap-3 py-2.5 px-3 w-full text-left text-on-surface-variant hover:text-on-surface rounded transition-colors" data-tab="users" type="button">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-label-md text-label-md">Users</span>
+</button>
+
+<button class="nav-side-item admin-nav-item flex items-center gap-3 py-2.5 px-3 w-full text-left text-on-surface-variant hover:text-on-surface rounded transition-colors" data-tab="audit" type="button">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+<span class="font-label-md text-label-md">Audit Logs</span>
+</button>
+
+<div class="pt-4 mt-4 border-t border-outline-variant/60">
+<p class="eyebrow px-3 mb-2 text-outline">Application</p>
+<a class="nav-side-item flex items-center gap-3 py-2 px-3 text-on-surface-variant hover:text-on-surface no-underline transition-colors rounded" href="dashboard.html">
+<span class="material-symbols-outlined text-[19px]">search</span>
+<span class="font-label-sm text-label-sm">Browse Workers</span>
+</a>
+<a class="nav-side-item flex items-center gap-3 py-2 px-3 text-on-surface-variant hover:text-on-surface no-underline transition-colors rounded" href="account.html">
+<span class="material-symbols-outlined text-[19px]">person</span>
+<span class="font-label-sm text-label-sm">My Account</span>
+</a>
+</div>
+</div>
+
+<!-- Admin User Chip -->
+<div class="mt-auto flex items-center gap-3 pt-4 border-t border-outline-variant px-1" data-nav="user"></div>
 </nav>
 
-<!-- Main -->
-<main class="flex-1 min-w-0 max-w-[1240px] mx-auto px-margin-mobile md:px-margin-desktop py-8 pb-32 md:pb-12">
+<!-- Main Workspace -->
+<main class="flex-1 min-w-0 max-w-[1280px] mx-auto px-4 md:px-8 py-6 pb-28 md:pb-12">
 
-<!-- Header. The right cluster is a plain DIV so js/theme.js drops the
-     light/dark switch in beside the other controls. -->
-<header class="flex flex-wrap justify-between items-start gap-4 mb-9">
+<!-- Top Header -->
+<header class="flex flex-wrap justify-between items-center gap-4 mb-6 pb-4 border-b border-outline-variant/60">
 <div>
-<h1 class="font-headline-lg text-headline-lg text-on-surface">Admin console</h1>
-<p class="font-body-md text-body-md text-on-surface-variant mt-1">Every figure below is read live from the federation database.</p>
+<h1 class="font-headline-lg text-headline-lg text-on-surface" id="admin-view-title">Dashboard Overview</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5" id="admin-view-subtitle">Live metrics and cooperative performance across the federation.</p>
 </div>
 <div class="flex items-center gap-2 flex-shrink-0">
-<button class="btn btn-quiet btn-sm" id="open-audit" type="button">Activity</button>
-<a class="btn btn-secondary btn-sm no-underline" href="account.html">My account</a>
-<button class="nav-logout btn btn-secondary btn-sm" type="button">Log out</button>
+<button class="btn btn-secondary btn-sm flex items-center gap-1.5" id="btn-refresh-view" type="button" title="Refresh current view">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+<span>Refresh</span>
+</button>
+<button class="nav-logout btn btn-quiet btn-sm" type="button">Log out</button>
 </div>
 </header>
 
-<!-- ============================== Tally =================================
-     Nine numbers that were nine floating cards (each with an icon repeating
-     its own label) are now one ruled band of six figures, three sub-counts
-     hung under the figures they qualify. -->
-<dl class="tally tally-3 mb-10">
+<!-- Global Feedback Notice -->
+<div id="admin-global-notice" class="hidden notice mb-6 transition-all" role="alert"></div>
+
+<!-- ======================================================================
+     VIEW 1: DASHBOARD OVERVIEW
+     ====================================================================== -->
+<section id="view-dashboard" class="tab-view space-y-8">
+<!-- Metrics Tally -->
+<dl class="tally tally-4 gap-4">
 <div class="tally-cell">
-<dt class="eyebrow">Total workers</dt>
-<dd class="figure tally-value text-on-surface" id="stat-workers">0</dd>
-<p class="font-body-md text-[13px] text-on-surface-variant mt-1"><span class="figure" id="stat-customers">0</span> customers registered</p>
+<dt class="eyebrow">Total Users</dt>
+<dd class="figure tally-value text-on-surface" id="stat-total-users">0</dd>
+<p class="font-body-md text-[13px] text-on-surface-variant mt-1"><span class="figure text-on-surface font-semibold" id="stat-customers">0</span> customers &middot; <span id="stat-suspended-users">0</span> suspended</p>
 </div>
+
 <div class="tally-cell">
-<dt class="eyebrow">Verified workers</dt>
-<dd class="figure tally-value text-on-surface" id="stat-verified-workers">0</dd>
-<p class="font-body-md text-[13px] text-on-surface-variant mt-1"><span id="stat-verified-pct">—</span> of all workers</p>
+<dt class="eyebrow">Total Workers</dt>
+<dd class="figure tally-value text-on-surface" id="stat-total-workers">0</dd>
+<p class="font-body-md text-[13px] text-on-surface-variant mt-1"><span class="figure text-on-surface font-semibold" id="stat-verified-workers">0</span> verified &middot; <span id="stat-pending-workers">0</span> pending</p>
 </div>
+
 <div class="tally-cell">
-<dt class="eyebrow">Total revenue</dt>
-<dd class="figure money tally-value" id="stat-revenue">&#8377;0</dd>
-<p class="font-body-md text-[13px] text-on-surface-variant mt-1"><span class="figure" id="stat-active">0</span> bookings active now</p>
+<dt class="eyebrow">Active Workers</dt>
+<dd class="figure tally-value text-primary" id="stat-active-workers">0</dd>
+<p class="font-body-md text-[13px] text-error mt-1"><span class="figure font-semibold" id="stat-blacklisted-workers">0</span> blacklisted</p>
 </div>
+
 <div class="tally-cell">
-<dt class="eyebrow">Completed jobs</dt>
-<dd class="figure tally-value text-on-surface" id="stat-completed">0</dd>
+<dt class="eyebrow">Total Bookings</dt>
+<dd class="figure tally-value text-on-surface" id="stat-total-bookings">0</dd>
+<p class="font-body-md text-[13px] text-on-surface-variant mt-1"><span class="figure text-primary font-semibold" id="stat-active-bookings">0</span> active &middot; <span id="stat-cancelled-bookings">0</span> cancelled</p>
 </div>
+
 <div class="tally-cell">
-<dt class="eyebrow">This month</dt>
-<dd class="figure money tally-value" id="stat-monthly-revenue">&#8377;0</dd>
+<dt class="eyebrow">Completed Jobs</dt>
+<dd class="figure tally-value text-on-surface" id="stat-completed-bookings">0</dd>
 </div>
+
 <div class="tally-cell">
-<dt class="eyebrow">Average rating</dt>
+<dt class="eyebrow">Total Revenue</dt>
+<dd class="figure money tally-value" id="stat-total-revenue">&#8377;0</dd>
+<p class="font-body-md text-[13px] text-on-surface-variant mt-1"><span id="stat-month-revenue">&#8377;0</span> this month</p>
+</div>
+
+<div class="tally-cell">
+<dt class="eyebrow">Average Rating</dt>
 <dd class="figure rating-value tally-value" id="stat-avg-rating">— ★</dd>
+</div>
+
+<div class="tally-cell">
+<dt class="eyebrow">Federation State</dt>
+<dd class="figure tally-value text-primary text-[20px] pt-1">Healthy</dd>
+<p class="font-body-md text-[13px] text-on-surface-variant mt-1">SQLite DB verified</p>
 </div>
 </dl>
 
-<!-- ===================== Workers + admin actions ======================
-     The roster you manage on the left; the buttons that act on the whole
-     federation on the right. -->
-<section class="grid lg:grid-cols-3 gap-10 lg:gap-12 mb-12">
-<div class="lg:col-span-2 min-w-0">
-<div class="rule-heading mb-1">
-<h2 class="font-title-md text-title-md text-on-surface">Worker management</h2>
-<span class="eyebrow flex-shrink-0">Live</span>
+<!-- Dashboard Grid -->
+<div class="grid lg:grid-cols-3 gap-8">
+<!-- Quick Actions & Status -->
+<div class="lg:col-span-2 space-y-6">
+<div class="panel p-6">
+<div class="rule-heading mb-4">
+<h2 class="font-title-md text-title-md text-on-surface">Service Demand Distribution</h2>
+<span class="eyebrow">Real Bookings</span>
 </div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-5">Verify a new listing, or suspend and reinstate one.</p>
-<div id="worker-management-list">
-<p class="font-body-md text-[14px] text-on-surface-variant">Loading workers…</p>
+<p class="font-body-md text-[14px] text-on-surface-variant mb-5">Current customer demand share by service category.</p>
+<div id="service-analytics-list" class="space-y-4">
+<p class="font-body-md text-[14px] text-on-surface-variant">Loading demand share…</p>
 </div>
 </div>
-<div class="lg:col-span-1 min-w-0">
-<div class="rule-heading mb-1">
-<h2 class="font-title-md text-title-md text-on-surface">Actions</h2>
 </div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-5">Federation-wide tasks.</p>
-<div class="flex flex-col gap-3">
-<button class="admin-action btn btn-primary w-full" data-action="register" type="button">Register a worker</button>
-<button class="admin-action btn btn-secondary w-full" data-action="export" type="button">Export activity report</button>
-<button class="admin-action btn btn-secondary w-full" data-action="bookings" type="button">Refresh all bookings</button>
+
+<!-- Right Column: Shortcuts & Security Status -->
+<div class="space-y-6">
+<div class="panel p-6">
+<div class="rule-heading mb-4">
+<h2 class="font-title-md text-title-md text-on-surface">Quick Admin Actions</h2>
 </div>
-<p id="admin-action-message" class="hidden notice mt-5"></p>
+<div class="space-y-2.5">
+<button class="btn btn-outline w-full justify-start text-left" id="btn-quick-manage-workers" type="button">
+<span class="material-symbols-outlined text-[19px]">badge</span>
+<span>Inspect Worker Roster</span>
+</button>
+<button class="btn btn-outline w-full justify-start text-left" id="btn-quick-manage-bookings" type="button">
+<span class="material-symbols-outlined text-[19px]">calendar_month</span>
+<span>Review Active Bookings</span>
+</button>
+<button class="btn btn-outline w-full justify-start text-left" id="btn-quick-manage-users" type="button">
+<span class="material-symbols-outlined text-[19px]">group</span>
+<span>Manage User Accounts</span>
+</button>
+<button class="btn btn-secondary w-full justify-start text-left" id="btn-quick-export-audit" type="button">
+<span class="material-symbols-outlined text-[19px]">download</span>
+<span>Export Audit CSV</span>
+</button>
+</div>
+</div>
+
+<div class="panel p-6 bg-surface-container-low">
+<p class="eyebrow mb-2 text-primary">Security & RBAC Guard</p>
+<p class="font-body-md text-[13px] text-on-surface-variant leading-relaxed">
+All admin operations strictly enforce backend authorization (<code class="text-primary text-[12px]">requireRole('admin')</code>). Non-admin attempts return 403 Forbidden. Every action writes to the append-only audit trail.
+</p>
+</div>
+</div>
 </div>
 </section>
 
-<!-- ===================== Bookings + service demand ====================
-     Real cooperative bookings, and which trades customers actually ask for
-     this month — the honest version of the invented forecast that used to
-     sit here as eight hardcoded bars. -->
-<section class="grid lg:grid-cols-3 gap-10 lg:gap-12 mb-12">
-<div class="lg:col-span-2 min-w-0">
-<div class="rule-heading mb-1">
-<h2 class="font-title-md text-title-md text-on-surface">Booking overview</h2>
-<button class="admin-action btn btn-quiet btn-sm flex-shrink-0" data-action="bookings" type="button">Refresh</button>
+<!-- ======================================================================
+     VIEW 2: WORKERS MANAGEMENT
+     ====================================================================== -->
+<section id="view-workers" class="tab-view space-y-6 hidden">
+<!-- Filter Toolbar -->
+<div class="panel p-4 flex flex-wrap items-center justify-between gap-4">
+<div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+<div class="relative flex-1 min-w-[200px] max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[20px] text-on-surface-variant pointer-events-none">search</span>
+<input type="text" id="worker-search-input" class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded bg-surface text-on-surface font-body-md text-[14px]" placeholder="Search worker by name, code, trade, phone…"/>
 </div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-5">Recent bookings across the federation.</p>
+
+<select id="worker-status-filter" class="border border-outline-variant rounded bg-surface text-on-surface px-3 py-2 font-body-md text-[14px]">
+<option value="">All Statuses</option>
+<option value="active">Active (Not Blacklisted)</option>
+<option value="blacklisted">Blacklisted</option>
+<option value="pending">Pending Verification</option>
+<option value="verified">Verified</option>
+<option value="suspended">Suspended</option>
+</select>
+</div>
+
+<div class="flex items-center gap-3">
+<span class="eyebrow" id="worker-count-badge">0 Workers</span>
+</div>
+</div>
+
+<!-- Workers Ledger / Table -->
+<div class="panel overflow-hidden">
 <div class="overflow-x-auto">
-<table class="w-full text-left">
+<table class="w-full text-left border-collapse">
 <thead>
-<tr>
-<th class="pr-4">Ref</th>
-<th class="pr-4">Customer</th>
-<th class="pr-4">Worker</th>
-<th class="pr-4">Trade</th>
-<th class="pr-4 text-right">Amount</th>
-<th>Status</th>
+<tr class="border-b border-outline-variant bg-surface-container-low text-outline text-[12px] uppercase font-semibold">
+<th class="py-3.5 px-4">Worker / Code</th>
+<th class="py-3.5 px-4">Trade</th>
+<th class="py-3.5 px-4">Rating & Jobs</th>
+<th class="py-3.5 px-4">Verification</th>
+<th class="py-3.5 px-4">Blacklist Status</th>
+<th class="py-3.5 px-4 text-right">Actions</th>
 </tr>
 </thead>
-<tbody id="booking-overview-list" class="font-body-md text-[14px]"></tbody>
+<tbody id="workers-table-body" class="divide-y divide-outline-variant font-body-md text-[14px]">
+<tr><td colspan="6" class="py-8 text-center text-on-surface-variant">Loading workers…</td></tr>
+</tbody>
 </table>
 </div>
 </div>
-<div class="lg:col-span-1 min-w-0">
-<div class="rule-heading mb-1">
-<h2 class="font-title-md text-title-md text-on-surface">Service demand</h2>
-<span class="eyebrow flex-shrink-0">This month</span>
+</section>
+
+<!-- ======================================================================
+     VIEW 3: BOOKINGS MANAGEMENT
+     ====================================================================== -->
+<section id="view-bookings" class="tab-view space-y-6 hidden">
+<!-- Filter Toolbar -->
+<div class="panel p-4 flex flex-wrap items-center justify-between gap-4">
+<div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+<div class="relative flex-1 min-w-[200px] max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[20px] text-on-surface-variant pointer-events-none">search</span>
+<input type="text" id="booking-search-input" class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded bg-surface text-on-surface font-body-md text-[14px]" placeholder="Search by booking code (SS-...), customer, worker, trade…"/>
 </div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-5">Share of bookings by trade.</p>
-<div id="service-analytics-list" class="space-y-4"></div>
+
+<select id="booking-status-filter" class="border border-outline-variant rounded bg-surface text-on-surface px-3 py-2 font-body-md text-[14px]">
+<option value="all">All Statuses</option>
+<option value="Pending">Pending</option>
+<option value="Confirmed">Confirmed</option>
+<option value="Completed">Completed</option>
+<option value="Cancelled">Cancelled</option>
+</select>
+</div>
+
+<div class="flex items-center gap-3">
+<span class="eyebrow" id="booking-count-badge">0 Bookings</span>
+</div>
+</div>
+
+<!-- Bookings Table -->
+<div class="panel overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-low text-outline text-[12px] uppercase font-semibold">
+<th class="py-3.5 px-4">Booking Ref</th>
+<th class="py-3.5 px-4">Customer</th>
+<th class="py-3.5 px-4">Assigned Worker</th>
+<th class="py-3.5 px-4">Trade</th>
+<th class="py-3.5 px-4">Date & Time</th>
+<th class="py-3.5 px-4 text-right">Amount</th>
+<th class="py-3.5 px-4">Status</th>
+<th class="py-3.5 px-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody id="bookings-table-body" class="divide-y divide-outline-variant font-body-md text-[14px]">
+<tr><td colspan="8" class="py-8 text-center text-on-surface-variant">Loading bookings…</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 </section>
 
-<!-- Activity Log — fed by the append-only audit_log table -->
-<section id="audit-log">
-<div class="rule-heading mb-1">
-<h2 class="font-title-md text-title-md text-on-surface">Recent activity</h2>
-<button class="btn btn-quiet btn-sm flex-shrink-0" id="refresh-audit" type="button">Refresh</button>
+<!-- ======================================================================
+     VIEW 4: USERS MANAGEMENT
+     ====================================================================== -->
+<section id="view-users" class="tab-view space-y-6 hidden">
+<!-- Filter Toolbar -->
+<div class="panel p-4 flex flex-wrap items-center justify-between gap-4">
+<div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+<div class="relative flex-1 min-w-[200px] max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[20px] text-on-surface-variant pointer-events-none">search</span>
+<input type="text" id="user-search-input" class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded bg-surface text-on-surface font-body-md text-[14px]" placeholder="Search user by name, email, phone…"/>
 </div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-5">Every login, booking and verification, in order. This log is append-only.</p>
-<div class="max-h-96 overflow-y-auto" id="audit-list">
-<p class="font-body-md text-[14px] text-on-surface-variant">Loading activity…</p>
+
+<select id="user-role-filter" class="border border-outline-variant rounded bg-surface text-on-surface px-3 py-2 font-body-md text-[14px]">
+<option value="all">All Roles</option>
+<option value="customer">Customer</option>
+<option value="worker">Worker</option>
+<option value="admin">Admin</option>
+</select>
+
+<select id="user-status-filter" class="border border-outline-variant rounded bg-surface text-on-surface px-3 py-2 font-body-md text-[14px]">
+<option value="all">All Statuses</option>
+<option value="Active">Active</option>
+<option value="Suspended">Suspended</option>
+</select>
+</div>
+
+<div class="flex items-center gap-3">
+<span class="eyebrow" id="user-count-badge">0 Users</span>
+</div>
+</div>
+
+<!-- Users Table -->
+<div class="panel overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-low text-outline text-[12px] uppercase font-semibold">
+<th class="py-3.5 px-4">User</th>
+<th class="py-3.5 px-4">Email</th>
+<th class="py-3.5 px-4">Phone</th>
+<th class="py-3.5 px-4">Role</th>
+<th class="py-3.5 px-4">Account Status</th>
+<th class="py-3.5 px-4">Registered</th>
+<th class="py-3.5 px-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody id="users-table-body" class="divide-y divide-outline-variant font-body-md text-[14px]">
+<tr><td colspan="7" class="py-8 text-center text-on-surface-variant">Loading users…</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- ======================================================================
+     VIEW 5: AUDIT LOGS
+     ====================================================================== -->
+<section id="view-audit" class="tab-view space-y-6 hidden">
+<!-- Filter Toolbar -->
+<div class="panel p-4 flex flex-wrap items-center justify-between gap-4">
+<div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+<div class="relative flex-1 min-w-[200px] max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[20px] text-on-surface-variant pointer-events-none">search</span>
+<input type="text" id="audit-search-input" class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded bg-surface text-on-surface font-body-md text-[14px]" placeholder="Search action, entity, user email, details…"/>
+</div>
+
+<select id="audit-action-filter" class="border border-outline-variant rounded bg-surface text-on-surface px-3 py-2 font-body-md text-[14px]">
+<option value="all">All Actions</option>
+<option value="BLACKLIST_WORKER">BLACKLIST_WORKER</option>
+<option value="UNBLACKLIST_WORKER">UNBLACKLIST_WORKER</option>
+<option value="CANCEL_BOOKING">CANCEL_BOOKING</option>
+<option value="SUSPEND_USER">SUSPEND_USER</option>
+<option value="ACTIVATE_USER">ACTIVATE_USER</option>
+<option value="booking.create">booking.create</option>
+<option value="user.login">user.login</option>
+<option value="user.register">user.register</option>
+<option value="admin.worker_update">admin.worker_update</option>
+</select>
+</div>
+
+<div class="flex items-center gap-2.5">
+<button class="btn btn-secondary btn-sm flex items-center gap-1.5" id="btn-export-audit" type="button">
+<span class="material-symbols-outlined text-[17px]">download</span>
+<span>Export CSV</span>
+</button>
+<span class="eyebrow" id="audit-count-badge">0 Events</span>
+</div>
+</div>
+
+<!-- Audit List -->
+<div class="panel overflow-hidden">
+<div id="audit-log-list" class="divide-y divide-outline-variant max-h-[600px] overflow-y-auto">
+<p class="py-8 text-center text-on-surface-variant font-body-md text-[14px]">Loading audit events…</p>
+</div>
 </div>
 </section>
 
 </main>
 
-<!-- BottomNavBar (Mobile Only) — filled in by js/nav.js -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center gap-1 px-2 py-2 md:hidden bg-surface-container-lowest border-t border-outline-variant" data-nav="bottom"></nav>
+<!-- ======================================================================
+     MODALS
+     ====================================================================== -->
+
+<!-- Modal 1: Blacklist Worker -->
+<div id="modal-blacklist-worker" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-blacklist-title">
+<div class="panel p-6 max-w-md w-full bg-card shadow-2xl rounded-md space-y-4">
+<div class="flex items-baseline justify-between border-b border-outline-variant pb-3">
+<h3 class="font-title-md text-title-md text-error flex items-center gap-2" id="modal-blacklist-title">
+<span class="material-symbols-outlined text-[22px]">block</span>
+<span>Blacklist Worker</span>
+</h3>
+<button type="button" class="close-modal btn btn-quiet btn-sm !p-1" aria-label="Close">&times;</button>
+</div>
+
+<p class="font-body-md text-[14px] text-on-surface">
+You are blacklisting <strong id="blacklist-worker-name" class="text-on-surface"></strong> (<span id="blacklist-worker-code"></span>).
+Blacklisted workers are immediately hidden from public search and cannot receive any new bookings.
+</p>
+
+<div>
+<label for="blacklist-reason" class="block font-label-md text-label-md font-semibold text-on-surface mb-1.5">
+Reason for Blacklisting <span class="text-error">*</span>
+</label>
+<textarea id="blacklist-reason" rows="3" class="w-full p-2.5 border border-outline-variant rounded bg-surface text-on-surface text-[14px] focus:ring-1 focus:ring-error" placeholder="State reason (e.g. repeated customer complaints, violation of safety guidelines)…"></textarea>
+<p class="font-body-md text-[12px] text-outline mt-1">This reason is logged to the federation audit trail.</p>
+</div>
+
+<div class="flex items-center justify-end gap-3 pt-2">
+<button type="button" class="close-modal btn btn-secondary btn-sm">Cancel</button>
+<button type="button" id="btn-confirm-blacklist" class="btn btn-danger btn-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[17px]">gavel</span>
+<span>Confirm Blacklist</span>
+</button>
+</div>
+</div>
+</div>
+
+<!-- Modal 2: Unblacklist / Reactivate Worker -->
+<div id="modal-unblacklist-worker" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-unblacklist-title">
+<div class="panel p-6 max-w-md w-full bg-card shadow-2xl rounded-md space-y-4">
+<div class="flex items-baseline justify-between border-b border-outline-variant pb-3">
+<h3 class="font-title-md text-title-md text-primary flex items-center gap-2" id="modal-unblacklist-title">
+<span class="material-symbols-outlined text-[22px]">check_circle</span>
+<span>Reactivate Worker</span>
+</h3>
+<button type="button" class="close-modal btn btn-quiet btn-sm !p-1" aria-label="Close">&times;</button>
+</div>
+
+<p class="font-body-md text-[14px] text-on-surface">
+Are you sure you want to lift the blacklist on <strong id="unblacklist-worker-name"></strong> (<span id="unblacklist-worker-code"></span>)?
+The worker will become available for customer bookings again.
+</p>
+
+<div class="flex items-center justify-end gap-3 pt-2">
+<button type="button" class="close-modal btn btn-secondary btn-sm">Cancel</button>
+<button type="button" id="btn-confirm-unblacklist" class="btn btn-primary btn-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[17px]">restart_alt</span>
+<span>Confirm Reactivation</span>
+</button>
+</div>
+</div>
+</div>
+
+<!-- Modal 3: Cancel Booking -->
+<div id="modal-cancel-booking" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-cancel-booking-title">
+<div class="panel p-6 max-w-md w-full bg-card shadow-2xl rounded-md space-y-4">
+<div class="flex items-baseline justify-between border-b border-outline-variant pb-3">
+<h3 class="font-title-md text-title-md text-error flex items-center gap-2" id="modal-cancel-booking-title">
+<span class="material-symbols-outlined text-[22px]">cancel</span>
+<span>Cancel Booking</span>
+</h3>
+<button type="button" class="close-modal btn btn-quiet btn-sm !p-1" aria-label="Close">&times;</button>
+</div>
+
+<div class="well p-3 text-[13px] space-y-1">
+<p><span class="text-outline">Booking:</span> <strong id="cancel-booking-code" class="figure text-on-surface font-semibold"></strong></p>
+<p><span class="text-outline">Customer:</span> <span id="cancel-booking-customer" class="text-on-surface"></span></p>
+<p><span class="text-outline">Service:</span> <span id="cancel-booking-service" class="text-on-surface"></span></p>
+</div>
+
+<div>
+<label for="cancel-booking-reason" class="block font-label-md text-label-md font-semibold text-on-surface mb-1.5">
+Cancellation Reason <span class="text-error">*</span>
+</label>
+<textarea id="cancel-booking-reason" rows="3" class="w-full p-2.5 border border-outline-variant rounded bg-surface text-on-surface text-[14px] focus:ring-1 focus:ring-error" placeholder="Explain why this booking is being cancelled by admin…"></textarea>
+<p class="font-body-md text-[12px] text-outline mt-1">This will be permanently attached to the booking record.</p>
+</div>
+
+<div class="flex items-center justify-end gap-3 pt-2">
+<button type="button" class="close-modal btn btn-secondary btn-sm">Keep Booking</button>
+<button type="button" id="btn-confirm-cancel-booking" class="btn btn-danger btn-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[17px]">close</span>
+<span>Cancel Booking</span>
+</button>
+</div>
+</div>
+</div>
+
+<!-- Modal 4: User Status (Suspend / Activate) -->
+<div id="modal-user-status" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-user-status-title">
+<div class="panel p-6 max-w-md w-full bg-card shadow-2xl rounded-md space-y-4">
+<div class="flex items-baseline justify-between border-b border-outline-variant pb-3">
+<h3 class="font-title-md text-title-md text-on-surface" id="modal-user-status-title">Change Account Status</h3>
+<button type="button" class="close-modal btn btn-quiet btn-sm !p-1" aria-label="Close">&times;</button>
+</div>
+
+<p class="font-body-md text-[14px] text-on-surface">
+You are about to <span id="user-status-action-verb" class="font-semibold"></span> account for <strong id="user-status-email"></strong> (<span id="user-status-role" class="capitalize"></span>).
+</p>
+
+<div>
+<label for="user-status-reason" class="block font-label-md text-label-md font-semibold text-on-surface mb-1.5">
+Reason / Note (Optional)
+</label>
+<input type="text" id="user-status-reason" class="w-full p-2.5 border border-outline-variant rounded bg-surface text-on-surface text-[14px]" placeholder="Reason for status change…"/>
+</div>
+
+<div class="flex items-center justify-end gap-3 pt-2">
+<button type="button" class="close-modal btn btn-secondary btn-sm">Cancel</button>
+<button type="button" id="btn-confirm-user-status" class="btn btn-primary btn-sm">Confirm</button>
+</div>
+</div>
+</div>
+
+<!-- Bottom Navigation for Mobile -->
+<nav class="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center gap-1 px-2 py-2 md:hidden bg-surface-container-lowest border-t border-outline-variant" id="admin-mobile-tabs">
+<button class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-primary text-[11px] font-semibold" data-tab="dashboard">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Dash</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-on-surface-variant text-[11px]" data-tab="workers">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+<span>Workers</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-on-surface-variant text-[11px]" data-tab="bookings">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+<span>Bookings</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-on-surface-variant text-[11px]" data-tab="users">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span>Users</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-on-surface-variant text-[11px]" data-tab="audit">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+<span>Audit</span>
+</button>
+</nav>
 
 <script src="js/api.js"></script>
 <script src="js/nav.js"></script>

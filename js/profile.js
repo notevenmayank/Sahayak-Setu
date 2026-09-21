@@ -314,6 +314,295 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    /* ------------------- Worker Protection Center Logic ---------------- */
+
+    let geoWatchId = null;
+    let lastGeoPostTime = 0;
+    let activeIncidentId = null;
+
+    async function initProtectionCenter() {
+        const scoreNum = document.getElementById('safety-score-number');
+        const statusBadge = document.getElementById('safety-status-badge');
+        const recText = document.getElementById('safety-recommendation');
+        const workHours = document.getElementById('safety-working-hours');
+        const consecJobs = document.getElementById('safety-consecutive');
+        const btnTakeBreak = document.getElementById('btn-take-break');
+        const btnEndBreak = document.getElementById('btn-end-break');
+
+        // 1. Safety Score & Workload
+        async function loadSafety() {
+            try {
+                const s = await API.safety.getMySafety();
+                if (!s) return;
+                if (scoreNum) scoreNum.textContent = `${s.safetyScore}%`;
+                if (statusBadge) {
+                    statusBadge.textContent = s.status.replace('_', ' ');
+                    statusBadge.className = 'badge ' + (s.status === 'SAFE' ? 'badge-good' : s.status === 'CAUTION' ? 'badge-wait' : 'badge-stop');
+                }
+                if (recText) recText.textContent = s.recommendation || 'Workload within normal thresholds.';
+                if (workHours) {
+                    const h = Math.floor((s.workingMinutes || 0) / 60);
+                    const m = (s.workingMinutes || 0) % 60;
+                    workHours.textContent = `${h}h ${m ? m + 'm' : ''}`;
+                }
+                if (consecJobs) consecJobs.textContent = s.consecutiveJobs || '0';
+
+                const inBreak = Boolean(s.activeBreak);
+                if (btnTakeBreak) btnTakeBreak.classList.toggle('hidden', inBreak);
+                if (btnEndBreak) btnEndBreak.classList.toggle('hidden', !inBreak);
+            } catch (err) {
+                console.warn('[safety] Could not load safety metrics:', err.message);
+            }
+        }
+
+        if (btnTakeBreak) {
+            btnTakeBreak.addEventListener('click', async () => {
+                btnTakeBreak.disabled = true;
+                try {
+                    await API.safety.startBreak();
+                    await loadSafety();
+                } catch (e) {
+                    alert(e.message);
+                } finally {
+                    btnTakeBreak.disabled = false;
+                }
+            });
+        }
+
+        if (btnEndBreak) {
+            btnEndBreak.addEventListener('click', async () => {
+                btnEndBreak.disabled = true;
+                try {
+                    await API.safety.endBreak();
+                    await loadSafety();
+                } catch (e) {
+                    alert(e.message);
+                } finally {
+                    btnEndBreak.disabled = false;
+                }
+            });
+        }
+
+        // 2. Sahayak Suraksha Insurance
+        const insBadge = document.getElementById('insurance-status-badge');
+        const insPolicy = document.getElementById('insurance-policy-num');
+        const btnEnroll = document.getElementById('btn-enroll-insurance');
+
+        async function loadInsurance() {
+            try {
+                const res = await API.insurance.status();
+                if (res && res.enrolled) {
+                    if (insBadge) {
+                        insBadge.textContent = 'Active Protection';
+                        insBadge.className = 'badge badge-verified';
+                    }
+                    if (insPolicy) insPolicy.textContent = res.policy ? res.policy.policyNumber : 'Active';
+                    if (btnEnroll) {
+                        btnEnroll.textContent = 'Protection Active (₹49/mo)';
+                        btnEnroll.disabled = true;
+                        btnEnroll.className = 'btn btn-secondary btn-sm w-full';
+                    }
+                } else {
+                    if (insBadge) {
+                        insBadge.textContent = 'Not Enrolled';
+                        insBadge.className = 'badge badge-wait';
+                    }
+                    if (insPolicy) insPolicy.textContent = 'None';
+                    if (btnEnroll) {
+                        btnEnroll.textContent = 'Enroll in Suraksha (₹49/mo)';
+                        btnEnroll.disabled = false;
+                    }
+                }
+            } catch (err) {
+                console.warn('[insurance] Status error:', err.message);
+            }
+        }
+
+        if (btnEnroll) {
+            btnEnroll.addEventListener('click', async () => {
+                if (!window.confirm('Enroll in Sahayak Suraksha (Basic Worker Protection)?\n\nBenefit: Up to ₹2,00,000 accidental protection.\nContribution: ₹49/month (prototype demo configuration).')) return;
+                btnEnroll.disabled = true;
+                btnEnroll.textContent = 'Enrolling…';
+                try {
+                    const res = await API.insurance.enroll('Basic Worker Protection');
+                    alert(res.message || 'Successfully enrolled in Sahayak Suraksha!');
+                    await loadInsurance();
+                } catch (err) {
+                    alert('Enrollment failed: ' + err.message);
+                    btnEnroll.disabled = false;
+                    btnEnroll.textContent = 'Enroll in Suraksha';
+                }
+            });
+        }
+
+        // 3. Location Sharing Toggle
+        const locToggle = document.getElementById('loc-share-toggle');
+        const locSubtext = document.getElementById('loc-status-subtext');
+        const locBadge = document.getElementById('loc-sharing-badge');
+
+        function stopLocationSharing() {
+            if (geoWatchId !== null) {
+                navigator.geolocation.clearWatch(geoWatchId);
+                geoWatchId = null;
+            }
+            if (locBadge) locBadge.classList.add('hidden');
+            if (locSubtext) locSubtext.textContent = 'Off (browser geolocation)';
+        }
+
+        function startLocationSharing() {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser.');
+                if (locToggle) locToggle.checked = false;
+                return;
+            }
+
+            if (locSubtext) locSubtext.textContent = 'Requesting GPS signal…';
+
+            geoWatchId = navigator.geolocation.watchPosition(
+                async (pos) => {
+                    const now = Date.now();
+                    // Throttle updates: send at most once every 15 seconds
+                    if (now - lastGeoPostTime < 14000) return;
+                    lastGeoPostTime = now;
+
+                    try {
+                        const { latitude, longitude, accuracy } = pos.coords;
+                        await API.maps.updateMyLocation(latitude, longitude, accuracy);
+                        if (locBadge) locBadge.classList.remove('hidden');
+                        if (locSubtext) locSubtext.textContent = `Sharing live GPS (accuracy: ±${Math.round(accuracy)}m)`;
+                    } catch (err) {
+                        console.warn('[location] update error:', err.message);
+                    }
+                },
+                (err) => {
+                    console.warn('[location] Geolocation error:', err.message);
+                    alert('Location sharing permission denied or unavailable.');
+                    stopLocationSharing();
+                    if (locToggle) locToggle.checked = false;
+                },
+                { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
+            );
+        }
+
+        if (locToggle) {
+            locToggle.addEventListener('change', () => {
+                if (locToggle.checked) {
+                    startLocationSharing();
+                } else {
+                    stopLocationSharing();
+                }
+            });
+        }
+
+        // 4. Emergency SOS
+        const btnSos = document.getElementById('btn-trigger-sos');
+        const sosMsg = document.getElementById('sos-status-msg');
+        const claimBox = document.getElementById('incident-claim-box');
+        const btnClaim = document.getElementById('btn-start-claim');
+        const incidentLabel = document.getElementById('recent-incident-label');
+
+        async function checkIncidents() {
+            try {
+                const incidents = await API.safety.myIncidents();
+                const active = incidents && incidents.find((i) => i.status === 'Active');
+                if (active) {
+                    activeIncidentId = active.id;
+                    if (claimBox) claimBox.classList.remove('hidden');
+                    if (incidentLabel) incidentLabel.textContent = `Emergency Incident #${active.id} Logged`;
+                    if (sosMsg) sosMsg.textContent = 'Active emergency recorded. Emergency procedure initiated.';
+                }
+            } catch (err) {
+                console.warn('[sos] Incidents check error:', err.message);
+            }
+        }
+
+        if (btnSos) {
+            btnSos.addEventListener('click', async () => {
+                const confirmed = window.confirm(
+                    '⚠️ CONFIRM EMERGENCY SOS ACTIVATION\n\n' +
+                    'This will instantly log an emergency incident with your coordinates and alert federation administrators.\n\n' +
+                    'Are you sure you want to trigger SOS?'
+                );
+                if (!confirmed) return;
+
+                btnSos.disabled = true;
+                btnSos.textContent = '🚨 Activating SOS…';
+
+                let lat = null, lng = null;
+                try {
+                    const pos = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 6000 });
+                    });
+                    lat = pos.coords.latitude;
+                    lng = pos.coords.longitude;
+                } catch { /* GPS fallback if permission not yet granted */ }
+
+                try {
+                    const res = await API.safety.sos({ latitude: lat, longitude: lng, type: 'Emergency SOS' });
+                    activeIncidentId = res.incidentId;
+                    btnSos.textContent = '🚨 SOS ACTIVATED';
+                    btnSos.classList.remove('bg-[#9c2f22]');
+                    btnSos.classList.add('bg-black');
+                    if (sosMsg) sosMsg.textContent = 'Emergency incident recorded. Follow your configured emergency procedure.';
+                    if (claimBox) claimBox.classList.remove('hidden');
+                    if (incidentLabel) incidentLabel.textContent = `Emergency Incident #${res.incidentId} Active`;
+                    alert(res.message + '\n\n' + res.procedure);
+                } catch (err) {
+                    alert('SOS trigger error: ' + err.message);
+                    btnSos.disabled = false;
+                    btnSos.textContent = '🚨 Trigger Emergency SOS';
+                }
+            });
+        }
+
+        if (btnClaim) {
+            btnClaim.addEventListener('click', async () => {
+                btnClaim.disabled = true;
+                btnClaim.textContent = 'Submitting claim assistance…';
+                try {
+                    const res = await API.insurance.claim(activeIncidentId, 'Emergency incident claim assistance request');
+                    alert(res.message || 'Insurance claim assistance initiated successfully.');
+                    btnClaim.textContent = 'Claim Assistance Submitted ✓';
+                } catch (err) {
+                    alert('Claim assistance error: ' + err.message);
+                    btnClaim.disabled = false;
+                    btnClaim.textContent = 'Start Insurance Claim Assistance';
+                }
+            });
+        }
+
+        // 5. Demand Insights ("Where demand is high")
+        async function loadDemandInsights() {
+            const grid = document.getElementById('demand-insights-grid');
+            if (!grid) return;
+            try {
+                const insights = await API.safety.demandInsights();
+                if (!insights || !insights.length) {
+                    grid.innerHTML = '<p class="text-[13px] text-outline p-2 col-span-4">Demand data updating…</p>';
+                    return;
+                }
+                grid.innerHTML = insights.slice(0, 4).map((item) => `
+                    <div class="well p-3.5 flex flex-col justify-between">
+                        <div>
+                            <span class="eyebrow">${esc(item.service)}</span>
+                            <h4 class="font-title-md text-[15px] text-on-surface mt-1">${esc(item.area)}</h4>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-outline-variant flex items-center justify-between">
+                            <span class="text-[12px] text-outline">${esc(item.complaintsCount)} requests</span>
+                            <span class="badge ${item.demandLevel === 'HIGH' ? 'badge-stop' : item.demandLevel === 'MEDIUM' ? 'badge-wait' : 'badge-good'} text-[11px]">
+                                ${esc(item.demandLevel)} Demand
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.warn('[demand] insights error:', err.message);
+            }
+        }
+
+        await Promise.all([loadSafety(), loadInsurance(), checkIncidents(), loadDemandInsights()]);
+    }
+
     /* -------------------------------- boot ------------------------------ */
 
     try {
@@ -330,6 +619,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderDashboard();
         renderEarnings();
 
+        if (me.user.role === 'worker') {
+            await initProtectionCenter();
+        } else {
+            const pc = document.getElementById('protection-center');
+            if (pc) pc.classList.add('hidden');
+        }
+
         // Deep links like profile.html#requests should land on that section.
         if (window.location.hash) {
             const target = document.querySelector(window.location.hash);
@@ -340,3 +636,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         upcomingList.innerHTML = '';
     }
 });
+

@@ -6,6 +6,7 @@
 const express = require('express');
 const { db, audit } = require('../db');
 const { requireAuth } = require('../middleware/auth');
+const safety = require('../services/workerSafety');
 
 const router = express.Router();
 
@@ -19,9 +20,9 @@ const SORTS = {
 router.get('/services', (_req, res) => {
   const services = db
     .prepare(
-      `SELECT s.name, s.icon, s.base_price, s.demand,
+      `SELECT s.name, s.icon, s.base_price, s.demand, s.risk_level,
               (SELECT COUNT(*) FROM workers w
-                WHERE w.service = s.name AND w.verification != 'Suspended') AS worker_count
+                WHERE w.service = s.name AND w.verification != 'Suspended' AND w.is_blacklisted != 1) AS worker_count
          FROM services s
         ORDER BY s.demand DESC`
     )
@@ -33,7 +34,7 @@ router.get('/services', (_req, res) => {
 router.get('/workers', (req, res) => {
   const { service, sort, available, q } = req.query;
 
-  const where = [`w.verification != 'Suspended'`];
+  const where = [`w.verification != 'Suspended'`, `w.is_blacklisted != 1`];
   const params = {};
 
   if (service) { where.push('w.service = @service'); params.service = String(service); }
@@ -50,7 +51,26 @@ router.get('/workers', (req, res) => {
     )
     .all(params);
 
-  res.json({ workers, count: workers.length });
+  const withSafety = workers.map((w) => {
+    try {
+      const snap = safety.readOrCalculate(w.id);
+      return {
+        ...w,
+        safetyScore: snap ? snap.safetyScore : 100,
+        safetyStatus: snap ? snap.status : 'SAFE',
+        workloadLevel: snap ? snap.workloadLevel : 'LOW',
+        assignmentAllowed: snap ? (snap.status !== 'HIGH_RISK' || !snap.assignment.blockNonEmergency) : true
+      };
+    } catch {
+      return { ...w, safetyScore: 100, safetyStatus: 'SAFE', workloadLevel: 'LOW', assignmentAllowed: true };
+    }
+  });
+
+  const ordered = sort === 'match'
+    ? safety.rankWorkers(withSafety)
+    : withSafety;
+
+  res.json({ workers: ordered, count: ordered.length });
 });
 
 // GET /api/workers/:id
@@ -83,6 +103,7 @@ router.patch('/workers/me/availability', requireAuth, (req, res) => {
 
   const availability = req.body.available === false ? 'Unavailable' : 'Available';
   db.prepare('UPDATE workers SET availability = ? WHERE id = ?').run(availability, worker.id);
+  try { safety.calculateForWorker(worker.id); } catch (err) { console.error('[safety]', err.message); }
 
   res.json({ ok: true, availability });
 });

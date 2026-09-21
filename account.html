@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600&amp;family=Karla:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"/>
 </head>
 <body class="bg-background text-on-background min-h-screen">
 
@@ -217,7 +218,64 @@
 <!-- Mobile bottom bar — filled in by js/nav.js -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center gap-1 px-2 py-2 md:hidden bg-surface-container-lowest border-t border-outline-variant" data-nav="bottom"></nav>
 
+<!-- ===================== Live Worker Tracking Modal ===================== -->
+<div id="tracking-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 hidden" role="dialog" aria-modal="true" aria-labelledby="tracking-title">
+  <div class="bg-card border border-rule-strong rounded-md max-w-3xl w-full flex flex-col max-h-[92vh] overflow-hidden shadow-2xl">
+    <!-- Header -->
+    <div class="px-5 py-3.5 border-b border-rule flex items-center justify-between gap-4 bg-paper">
+      <div class="min-w-0">
+        <div class="flex items-center gap-2">
+          <h2 id="tracking-title" class="font-title-md text-[18px] text-on-surface truncate">Worker Live Tracking</h2>
+          <span class="badge badge-good font-mono text-[11px] flex-shrink-0" id="tracking-booking-code">SS-2026</span>
+        </div>
+        <p class="rate-row-meta text-[13px] truncate mt-0.5" id="tracking-worker-name">Worker: &mdash;</p>
+      </div>
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <!-- DEMO toggle -->
+        <label class="flex items-center gap-2 cursor-pointer bg-card px-2.5 py-1 rounded border border-rule-strong text-xs select-none" title="Simulate worker movement towards destination">
+          <input type="checkbox" id="demo-simulation-toggle" class="toggle-checkbox" />
+          <span class="font-label-sm text-[12px] text-secondary font-bold tracking-wider">[DEMO] Simulate</span>
+        </label>
+        <button type="button" id="close-tracking-modal" class="btn btn-quiet btn-sm !p-1" aria-label="Close tracking">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Status & Freshness Strip -->
+    <div class="px-5 py-2.5 bg-card border-b border-rule flex flex-wrap items-center justify-between text-xs gap-3">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse flex-shrink-0" id="tracking-indicator"></span>
+        <span id="tracking-freshness" class="rate-row-meta text-[13px] font-medium truncate">Fetching worker position…</span>
+      </div>
+      <div id="tracking-eta" class="font-label-sm text-[13px] font-semibold text-primary"></div>
+    </div>
+
+    <!-- Map Container -->
+    <div class="relative flex-1 min-h-[380px] w-full bg-surface-container">
+      <div id="tracking-map" class="absolute inset-0 w-full h-full"></div>
+      <div id="tracking-error" class="hidden absolute inset-0 bg-paper/95 flex items-center justify-center p-6 text-center z-10">
+        <div class="max-w-md">
+          <span class="material-symbols-outlined text-error text-[36px] mb-2 block mx-auto">shield</span>
+          <h3 class="font-title-md text-[16px] text-error mb-1">Tracking Protected</h3>
+          <p class="font-body-md text-on-surface-variant text-[13px]" id="tracking-error-msg"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer info -->
+    <div class="px-5 py-2.5 border-t border-rule bg-paper flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-primary inline-block"></span> Worker location</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-secondary inline-block"></span> Service destination</span>
+      </div>
+      <span class="font-label-sm text-[11px] text-faint">Authorization protected &bull; Active booking required</span>
+    </div>
+  </div>
+</div>
+
 <script src="js/api.js"></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/account.js"></script>
 <script src="js/chat-widget.js"></script>

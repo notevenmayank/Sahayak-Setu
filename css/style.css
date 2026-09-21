@@ -921,3 +921,39 @@ html.dark .masthead { background: var(--card); border-bottom-color: var(--rule);
 html.dark .theme-toggle { background: var(--card); color: var(--brass); border-color: var(--rule-strong); }
 html.dark .shimmer { background: #2c2d27; }
 html.dark .state { border-color: var(--rule-strong); }
+
+/* --- Live Tracking Map Markers --------------------------------------- */
+.map-marker-worker {
+    width: 34px;
+    height: 34px;
+    background-color: var(--pine);
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.map-marker-worker:hover {
+    transform: scale(1.12);
+}
+.map-marker-customer {
+    width: 34px;
+    height: 34px;
+    background-color: #0b57d0;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.map-marker-customer:hover {
+    transform: scale(1.12);
+}

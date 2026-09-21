@@ -9,6 +9,7 @@
 const express = require('express');
 const { db, audit } = require('../db');
 const { requireAuth, optionalAuth } = require('../middleware/auth');
+const safety = require('../services/workerSafety');
 
 const router = express.Router();
 
@@ -38,6 +39,9 @@ function shape(row) {
     preferredTime: row.preferred_time,
     instructions: row.instructions,
     createdAt: row.created_at,
+    travelMinutes: row.travel_minutes || 0,
+    isEmergency: Boolean(row.is_emergency),
+    cancellationReason: row.cancellation_reason || null,
     worker: row.worker_name
       ? { id: row.worker_id, name: row.worker_name, service: row.worker_service, rating: row.worker_rating }
       : null
@@ -75,6 +79,7 @@ router.post('/bookings', optionalAuth, (req, res) => {
   const preferredDate = String(b.preferredDate || '').trim();
   const preferredTime = String(b.preferredTime || '').trim();
   const instructions = String(b.additionalInstructions || b.instructions || '').trim();
+  const isEmergency = Boolean(b.isEmergency || b.emergency);
 
   if (!workerId) return res.status(400).json({ error: 'Please choose a worker.' });
   if (customerName.length < 2) return res.status(400).json({ error: 'Please enter your name.' });
@@ -89,6 +94,9 @@ router.post('/bookings', optionalAuth, (req, res) => {
 
   const worker = db.prepare('SELECT * FROM workers WHERE id = ?').get(workerId);
   if (!worker) return res.status(404).json({ error: 'That worker no longer exists.' });
+  if (worker.is_blacklisted) {
+    return res.status(409).json({ error: `${worker.name} is currently blacklisted and cannot accept bookings.` });
+  }
   if (worker.availability !== 'Available') {
     return res.status(409).json({ error: `${worker.name} is currently unavailable. Please pick another worker.` });
   }
@@ -101,24 +109,42 @@ router.post('/bookings', optionalAuth, (req, res) => {
     return res.status(409).json({ error: `${worker.name} is already booked at ${preferredTime}. Please pick another slot.` });
   }
 
+  const gate = safety.canAssignWorker(workerId, { isEmergency });
+  if (!gate.ok) {
+    return res.status(gate.status || 409).json({ error: gate.error, safetyStatus: gate.snapshot && gate.snapshot.status });
+  }
+
+  let travelMinutes = Number(b.travelMinutes);
+  if (!Number.isFinite(travelMinutes) || travelMinutes < 0) {
+    travelMinutes = safety.estimateTravelMinutes(worker);
+  }
+  travelMinutes = Math.min(24 * 60, Math.round(travelMinutes));
+
   const code = nextCode();
   const id = db
     .prepare(
       `INSERT INTO bookings (code, customer_id, worker_id, service, customer_name, mobile,
-                             address, preferred_date, preferred_time, instructions, amount, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')`
+                             address, preferred_date, preferred_time, instructions, amount, status,
+                             travel_minutes, is_emergency)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)`
     )
     .run(code, req.user ? req.user.id : null, workerId, worker.service, customerName,
-         mobile, address, preferredDate, preferredTime, instructions, worker.price_from)
+         mobile, address, preferredDate, preferredTime, instructions, worker.price_from,
+         travelMinutes, isEmergency ? 1 : 0)
     .lastInsertRowid;
+
+  try { safety.calculateForWorker(workerId); } catch (err) { console.error('[safety]', err.message); }
 
   audit('booking.create', {
     userId: req.user ? req.user.id : null,
     entity: 'booking', entityId: code,
-    details: { workerId, service: worker.service }, ip: req.ip
+    details: { workerId, service: worker.service, isEmergency }, ip: req.ip
   });
 
-  res.status(201).json({ booking: shape(db.prepare(`${SELECT_BOOKING} WHERE b.id = ?`).get(id)) });
+  res.status(201).json({
+    booking: shape(db.prepare(`${SELECT_BOOKING} WHERE b.id = ?`).get(id)),
+    ...(gate.warning ? { safetyWarning: gate.warning } : {})
+  });
 });
 
 // GET /api/bookings  — what the caller is allowed to see
@@ -168,8 +194,16 @@ router.patch('/bookings/:code/status', requireAuth, (req, res) => {
 
   db.prepare('UPDATE bookings SET status = ? WHERE id = ?').run(status, row.id);
 
+  if (status === 'Confirmed' && !row.started_at) {
+    db.prepare("UPDATE bookings SET started_at = datetime('now') WHERE id = ?").run(row.id);
+  }
   if (status === 'Completed') {
+    db.prepare("UPDATE bookings SET completed_at = datetime('now') WHERE id = ? AND completed_at IS NULL").run(row.id);
     db.prepare('UPDATE workers SET jobs_done = jobs_done + 1 WHERE id = ?').run(row.worker_id);
+  }
+
+  if (row.worker_id) {
+    try { safety.calculateForWorker(row.worker_id); } catch (err) { console.error('[safety]', err.message); }
   }
 
   audit('booking.status', {

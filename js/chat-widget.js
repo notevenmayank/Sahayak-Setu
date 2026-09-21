@@ -127,6 +127,9 @@
   .ssc-err{align-self:stretch;max-width:100%;background:transparent;border:0;
     border-left:3px solid var(--brick,#9c2f22);border-radius:0;
     padding:1px 0 1px 10px;font-size:12.5px;color:var(--brick,#9c2f22);}
+  .ssc-msg-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;padding-top:6px;border-top:1px dashed var(--ssc-border);}
+  .ssc-action-btn{background:var(--ssc-tint);border:1px solid var(--ssc-fill);color:var(--ssc-fill);border-radius:3px;padding:3px 8px;font-size:11.5px;cursor:pointer;font-family:inherit;font-weight:500;}
+  .ssc-action-btn:hover{background:var(--ssc-fill);color:#fff;}
 
   .ssc-typing{align-self:flex-start;background:var(--ssc-surface);border:1px solid var(--ssc-border);
     border-radius:6px;border-top-left-radius:2px;padding:12px;display:flex;gap:5px;}
@@ -251,10 +254,37 @@
 
   /* ----------------------------- rendering -------------------------- */
 
-  function addMessage(text, who) {
+  function addMessage(text, who, actions = null) {
     const el = document.createElement('div');
     el.className = 'ssc-msg ' + (who === 'user' ? 'ssc-user' : who === 'error' ? 'ssc-err' : 'ssc-bot');
     el.textContent = text;
+
+    if (actions && Array.isArray(actions) && actions.length > 0) {
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'ssc-msg-actions';
+      actions.forEach((act) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ssc-action-btn';
+        btn.textContent = act.label || (act.type === 'book_worker' ? 'Book Worker' : act.type === 'track_worker' ? 'Track Worker' : 'View Details');
+        btn.addEventListener('click', () => {
+          if (act.type === 'book_worker' && act.workerId) {
+            window.location.href = `booking.html?workerId=${encodeURIComponent(act.workerId)}`;
+          } else if (act.type === 'view_worker' && act.workerId) {
+            window.location.href = `booking.html?workerId=${encodeURIComponent(act.workerId)}`;
+          } else if (act.type === 'track_worker') {
+            window.location.href = 'account.html#bookings';
+          } else if (act.type === 'view_insurance') {
+            window.location.href = 'profile.html#suraksha';
+          } else if (act.type === 'view_booking') {
+            window.location.href = 'account.html#bookings';
+          }
+        });
+        actionsDiv.appendChild(btn);
+      });
+      el.appendChild(actionsDiv);
+    }
+
     body.appendChild(el);
     body.scrollTop = body.scrollHeight;
     return el;
@@ -336,11 +366,11 @@
     try {
       const data = await window.API.chat.send(text, sessionId());
       hideTyping();
-      addMessage(data.reply, 'bot');
+      addMessage(data.reply, 'bot', data.actions);
       if (data.source === 'fallback') {
         setStatus('offline assistant', false);
       } else {
-        setStatus('online', true);
+        setStatus('online (Gemini 2.5 Flash)', true);
       }
     } catch (err) {
       hideTyping();
@@ -371,7 +401,19 @@
   async function probe() {
     try {
       const health = await window.API.chat.health();
-      setStatus(health.ai === 'openai' ? 'online' : 'offline assistant', health.ai === 'openai');
+      const isOnline = health.ai === 'gemini' || health.ai === 'grok' || health.ai === 'groq';
+      let label = 'offline assistant';
+      if (isOnline) {
+        if (health.ai === 'groq') {
+          const m = health.model ? (health.model.includes('/') ? health.model.split('/')[1] : health.model) : '';
+          label = m ? `Groq (${m})` : 'Groq';
+        } else if (health.ai === 'grok') {
+          label = health.model || 'Grok';
+        } else {
+          label = health.model || 'Gemini';
+        }
+      }
+      setStatus(label, isOnline);
     } catch {
       setStatus('server offline', false);
     }

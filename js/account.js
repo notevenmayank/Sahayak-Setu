@@ -270,6 +270,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             : booking.customerName;
 
         const canCancel = role === 'customer' && (booking.status === 'Pending' || booking.status === 'Confirmed');
+        const canTrack = role === 'customer' && booking.status === 'Confirmed' && booking.worker && booking.worker.id;
 
         return `
             <div class="ledger-row">
@@ -281,7 +282,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <p class="font-body-md text-[14px] text-on-surface mt-3">${esc(friendlyDate(booking.preferredDate))}, ${esc(booking.preferredTime)}</p>
                 <p class="rate-row-meta">${esc(booking.address)}</p>
                 <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-                    <span class="badge ${badge}">${esc(booking.status)}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="badge ${badge}">${esc(booking.status)}</span>
+                        ${canTrack ? `
+                            <button class="track-worker btn btn-primary btn-sm flex items-center gap-1"
+                                data-code="${esc(booking.code)}"
+                                data-worker-id="${esc(booking.worker.id)}"
+                                data-worker-name="${esc(booking.worker.name)}"
+                                data-address="${esc(booking.address || '')}"
+                                type="button">
+                                <span class="material-symbols-outlined text-[16px]">near_me</span>
+                                Track Worker
+                            </button>
+                        ` : ''}
+                    </div>
                     ${canCancel
                         ? `<button class="cancel-booking btn btn-quiet btn-sm" data-code="${esc(booking.code)}" type="button">Cancel booking</button>`
                         : ''}
@@ -328,6 +342,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     el('bookings-list').addEventListener('click', async (event) => {
+        const trackBtn = event.target.closest('.track-worker');
+        if (trackBtn) {
+            const code = trackBtn.dataset.code;
+            const workerId = Number(trackBtn.dataset.workerId);
+            const workerName = trackBtn.dataset.workerName;
+            const address = trackBtn.dataset.address;
+            openTrackingModal(code, workerId, workerName, address);
+            return;
+        }
+
         const button = event.target.closest('.cancel-booking');
         if (!button) return;
 
@@ -349,6 +373,299 @@ document.addEventListener('DOMContentLoaded', async () => {
     el('refresh-bookings').addEventListener('click', (event) => {
         withButton(event.currentTarget, 'Refreshing…', loadBookings);
     });
+
+    /* -------------------------- worker tracking modal ------------------- */
+
+    const OSM_STYLE = {
+        version: 8,
+        sources: {
+            osm: {
+                type: 'raster',
+                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                tileSize: 256,
+                attribution: '&copy; OpenStreetMap contributors'
+            }
+        },
+        layers: [{
+            id: 'osm-tiles',
+            type: 'raster',
+            source: 'osm',
+            minzoom: 0,
+            maxzoom: 19
+        }]
+    };
+
+    let trackingMap = null;
+    let workerMarker = null;
+    let customerMarker = null;
+    let trackingPollTimer = null;
+    let freshnessInterval = null;
+    let demoSimInterval = null;
+    let lastLocationTime = null;
+    let currentWorkerId = null;
+    let currentBookingCode = null;
+    let currentWorkerCoords = null;
+    let currentCustomerCoords = null;
+    let activeRouteCoords = [];
+
+    function updateFreshnessLabel() {
+        if (!lastLocationTime) return;
+        const now = Date.now();
+        const diffSecs = Math.max(0, Math.round((now - lastLocationTime) / 1000));
+        setText('tracking-freshness', `Worker location updated ${diffSecs}s ago`);
+    }
+
+    function stopTracking() {
+        if (trackingPollTimer) { clearInterval(trackingPollTimer); trackingPollTimer = null; }
+        if (freshnessInterval) { clearInterval(freshnessInterval); freshnessInterval = null; }
+        stopDemoSimulation();
+        const modal = el('tracking-modal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function stopDemoSimulation() {
+        if (demoSimInterval) { clearInterval(demoSimInterval); demoSimInterval = null; }
+        const demoToggle = el('demo-simulation-toggle');
+        if (demoToggle) demoToggle.checked = false;
+        if (workerMarker && currentWorkerCoords) {
+            workerMarker.setLngLat(currentWorkerCoords);
+        }
+        updateFreshnessLabel();
+    }
+
+    function startDemoSimulation() {
+        if (!workerMarker || !currentCustomerCoords) return;
+        if (demoSimInterval) clearInterval(demoSimInterval);
+
+        let steps = [];
+        if (activeRouteCoords && activeRouteCoords.length > 5) {
+            const total = activeRouteCoords.length;
+            const count = Math.min(25, total);
+            for (let i = 0; i < count; i++) {
+                const idx = Math.floor((i / (count - 1)) * (total - 1));
+                steps.push(activeRouteCoords[idx]);
+            }
+        } else if (currentWorkerCoords) {
+            const count = 20;
+            for (let i = 0; i <= count; i++) {
+                const t = i / count;
+                const lng = currentWorkerCoords[0] + (currentCustomerCoords[0] - currentWorkerCoords[0]) * t;
+                const lat = currentWorkerCoords[1] + (currentCustomerCoords[1] - currentWorkerCoords[1]) * t;
+                steps.push([lng, lat]);
+            }
+        }
+
+        if (!steps.length) return;
+
+        let stepIndex = 0;
+        setText('tracking-freshness', '[DEMO] Simulating live worker movement…');
+        setText('tracking-eta', `[DEMO] Approaching: ${steps.length} steps remaining`);
+
+        demoSimInterval = setInterval(() => {
+            if (stepIndex < steps.length) {
+                const coord = steps[stepIndex];
+                workerMarker.setLngLat(coord);
+                stepIndex++;
+                const remaining = steps.length - stepIndex;
+                if (remaining > 0) {
+                    setText('tracking-eta', `[DEMO] In transit · ETA ~${Math.max(1, Math.round(remaining * 0.3))} mins`);
+                } else {
+                    setText('tracking-eta', `[DEMO] Worker has arrived at destination!`);
+                    setText('tracking-freshness', '[DEMO] Simulation complete');
+                    clearInterval(demoSimInterval);
+                    demoSimInterval = null;
+                }
+            }
+        }, 750);
+    }
+
+    async function refreshWorkerPosition() {
+        if (!currentWorkerId || el('demo-simulation-toggle')?.checked) return;
+        try {
+            const res = await API.maps.workerLocation(currentWorkerId, currentBookingCode);
+            if (res.available) {
+                currentWorkerCoords = [res.longitude, res.latitude];
+                if (workerMarker) {
+                    workerMarker.setLngLat(currentWorkerCoords);
+                }
+                lastLocationTime = Date.now() - (res.secondsAgo * 1000);
+                updateFreshnessLabel();
+            }
+        } catch (err) {
+            console.warn('[TRACKING] Poll error:', err.message);
+        }
+    }
+
+    async function openTrackingModal(bookingCode, workerId, workerName, address) {
+        currentBookingCode = bookingCode;
+        currentWorkerId = workerId;
+        currentWorkerCoords = null;
+        currentCustomerCoords = null;
+        activeRouteCoords = [];
+
+        const modal = el('tracking-modal');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+
+        setText('tracking-booking-code', bookingCode);
+        setText('tracking-worker-name', `Worker: ${workerName}`);
+        setText('tracking-freshness', 'Connecting to worker live feed…');
+        setText('tracking-eta', 'Calculating route…');
+        el('tracking-error')?.classList.add('hidden');
+        if (el('demo-simulation-toggle')) el('demo-simulation-toggle').checked = false;
+
+        // Ensure MapLibre container is initialized
+        if (!trackingMap && typeof maplibregl !== 'undefined') {
+            try {
+                trackingMap = new maplibregl.Map({
+                    container: 'tracking-map',
+                    style: OSM_STYLE,
+                    center: [77.3740, 28.6270],
+                    zoom: 12
+                });
+                trackingMap.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+            } catch (err) {
+                console.error('[TRACKING] Map init failure:', err);
+            }
+        } else if (trackingMap) {
+            trackingMap.resize();
+        }
+
+        // Fetch worker location (authorization protected)
+        let workerLoc = null;
+        try {
+            workerLoc = await API.maps.workerLocation(workerId, bookingCode);
+        } catch (err) {
+            el('tracking-error')?.classList.remove('hidden');
+            setText('tracking-error-msg', err.message || 'Worker location is authorization-protected.');
+            setText('tracking-freshness', 'Tracking protected');
+            setText('tracking-eta', '');
+            return;
+        }
+
+        if (!workerLoc || !workerLoc.available) {
+            el('tracking-error')?.classList.remove('hidden');
+            setText('tracking-error-msg', workerLoc?.message || 'Worker has not enabled GPS location sharing yet.');
+            setText('tracking-freshness', 'Location not available');
+            setText('tracking-eta', '');
+            return;
+        }
+
+        currentWorkerCoords = [workerLoc.longitude, workerLoc.latitude];
+        lastLocationTime = Date.now() - (workerLoc.secondsAgo * 1000);
+        updateFreshnessLabel();
+
+        // Customer coordinate lookup
+        currentCustomerCoords = [77.3800, 28.6250]; // Default Noida NCR
+        if (address) {
+            try {
+                const results = await API.maps.geocode(address);
+                if (results && results.length > 0) {
+                    currentCustomerCoords = [Number(results[0].lon), Number(results[0].lat)];
+                }
+            } catch (err) {
+                console.warn('[TRACKING] Address geocoding error:', err);
+            }
+        }
+
+        if (trackingMap) {
+            trackingMap.resize();
+
+            // Place/update Customer Marker
+            if (!customerMarker) {
+                const cPin = document.createElement('div');
+                cPin.className = 'map-marker-customer';
+                cPin.setAttribute('title', 'Your service address');
+                cPin.innerHTML = '<span class="material-symbols-outlined text-[18px]">home</span>';
+                customerMarker = new maplibregl.Marker({ element: cPin })
+                    .setLngLat(currentCustomerCoords)
+                    .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML(`<strong>Your Address</strong><p class="text-xs mt-1">${esc(address || 'Service location')}</p>`))
+                    .addTo(trackingMap);
+            } else {
+                customerMarker.setLngLat(currentCustomerCoords);
+            }
+
+            // Place/update Worker Marker
+            if (!workerMarker) {
+                const wPin = document.createElement('div');
+                wPin.className = 'map-marker-worker';
+                wPin.setAttribute('title', `${workerName} (Live)`);
+                wPin.innerHTML = '<span class="material-symbols-outlined text-[18px]">engineering</span>';
+                workerMarker = new maplibregl.Marker({ element: wPin })
+                    .setLngLat(currentWorkerCoords)
+                    .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML(`<strong>${esc(workerName)}</strong><p class="text-xs mt-1">Live Worker Location</p>`))
+                    .addTo(trackingMap);
+            } else {
+                workerMarker.setLngLat(currentWorkerCoords);
+            }
+
+            // Fetch & draw route
+            try {
+                const routeData = await API.maps.route(
+                    { lat: currentWorkerCoords[1], lng: currentWorkerCoords[0] },
+                    { lat: currentCustomerCoords[1], lng: currentCustomerCoords[0] }
+                );
+
+                if (routeData && routeData.geometry) {
+                    activeRouteCoords = routeData.geometry.coordinates;
+                    const geojson = { type: 'Feature', geometry: routeData.geometry };
+
+                    if (trackingMap.getSource('track-route')) {
+                        trackingMap.getSource('track-route').setData(geojson);
+                    } else {
+                        trackingMap.addSource('track-route', { type: 'geojson', data: geojson });
+                        trackingMap.addLayer({
+                            id: 'track-route-line',
+                            type: 'line',
+                            source: 'track-route',
+                            layout: { 'line-cap': 'round', 'line-join': 'round' },
+                            paint: { 'line-color': '#1f5140', 'line-width': 5, 'line-opacity': 0.85 }
+                        });
+                    }
+
+                    if (routeData.duration) {
+                        const mins = Math.max(1, Math.round(routeData.duration / 60));
+                        const km = (routeData.distance / 1000).toFixed(1);
+                        setText('tracking-eta', `ETA: ~${mins} mins (${km} km)`);
+                    }
+                }
+            } catch (routeErr) {
+                console.warn('[TRACKING] Route calc failed:', routeErr);
+                setText('tracking-eta', 'Direct distance: ~2.4 km');
+            }
+
+            // Fit bounds with padding
+            const bounds = new maplibregl.LngLatBounds();
+            bounds.extend(currentCustomerCoords);
+            bounds.extend(currentWorkerCoords);
+            trackingMap.fitBounds(bounds, { padding: 60, maxZoom: 16 });
+        }
+
+        // Start freshness interval
+        if (freshnessInterval) clearInterval(freshnessInterval);
+        freshnessInterval = setInterval(updateFreshnessLabel, 1000);
+
+        // Start 10-second polling
+        if (trackingPollTimer) clearInterval(trackingPollTimer);
+        trackingPollTimer = setInterval(refreshWorkerPosition, 10000);
+    }
+
+    el('close-tracking-modal')?.addEventListener('click', stopTracking);
+    el('demo-simulation-toggle')?.addEventListener('change', (e) => {
+        if (e.target.checked) startDemoSimulation();
+        else stopDemoSimulation();
+    });
+
+    el('tracking-modal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'tracking-modal') stopTracking();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !el('tracking-modal')?.classList.contains('hidden')) {
+            stopTracking();
+        }
+    });
+
 
     /* -------------------------------- boot ------------------------------ */
 

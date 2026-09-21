@@ -51,9 +51,9 @@ function optionalAuth(req, _res, next) {
     try {
       const payload = jwt.verify(token, SECRET);
       const user = db
-        .prepare('SELECT id, name, email, phone, role FROM users WHERE id = ?')
+        .prepare('SELECT id, name, email, phone, role, status FROM users WHERE id = ?')
         .get(payload.sub);
-      if (user) req.user = user;
+      if (user && user.status !== 'Suspended') req.user = user;
     } catch {
       /* expired or tampered token — treat as anonymous */
     }
