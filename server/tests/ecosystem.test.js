@@ -7,7 +7,7 @@
  *  - Suraksha Micro-Insurance prototype
  *  - Emergency SOS workflow
  *  - Worker Safety score & fatigue management
- *  - Chat actions & Gemini fallback
+ *  - Chat actions & AI fallback
  */
 const http = require('http');
 

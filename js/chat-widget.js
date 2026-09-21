@@ -370,7 +370,8 @@
       if (data.source === 'fallback') {
         setStatus('offline assistant', false);
       } else {
-        setStatus('online (Gemini 2.5 Flash)', true);
+        const srcLabel = data.source === 'groq' ? 'Groq Cloud' : data.source === 'grok' ? 'Grok' : data.source === 'gemini' ? 'Gemini' : 'AI Assistant';
+        setStatus(`online (${srcLabel})`, true);
       }
     } catch (err) {
       hideTyping();

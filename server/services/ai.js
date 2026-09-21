@@ -1,15 +1,15 @@
 /**
- * services/ai.js — Gemini 2.5 Flash grounded assistant for Sahayak Setu.
+ * services/ai.js — Grounded AI assistant for Sahayak Setu (Groq Cloud primary, Gemini / Fallback supported).
  *
  * Architecture:
- *   User -> /api/chat -> Gemini 2.5 Flash -> Tool Call (intent determination)
- *   -> Backend verification & SQLite DB execution -> Trusted Facts -> Gemini natural language reply
+ *   User -> /api/chat -> Groq Cloud (qwen/qwen3.8-27b) / AI Provider -> Tool Call (intent determination)
+ *   -> Backend verification & SQLite DB execution -> Trusted Facts -> Natural language reply
  *
  * Principles:
- *   - "Gemini thinks, backend verifies, database provides the truth."
- *   - Gemini never directly accesses SQLite or executes raw SQL.
- *   - Gemini API key is server-side only; never exposed to frontend.
- *   - High-quality offline fallback keeps the app functional even if Gemini is unreachable.
+ *   - "AI thinks, backend verifies, database provides the truth."
+ *   - AI never directly accesses SQLite or executes raw SQL.
+ *   - API keys are server-side only; never exposed to frontend.
+ *   - High-quality offline fallback keeps the app functional even if external AI is unreachable.
  */
 
 require('dotenv').config();
@@ -42,7 +42,7 @@ function getAiClient() {
 }
 
 /* ------------------------------------------------------------------ *
- * Tool Declarations for Gemini 2.5 Flash
+ * Tool Declarations for Grounded Assistant (Groq / Gemini)
  * ------------------------------------------------------------------ */
 
 const FUNCTION_DECLARATIONS = [
@@ -583,7 +583,7 @@ Core Rules & Behavior:
 - Be warm, concise, and practical. 2 to 3 short sentences is ideal.
 - NEVER invent, hallucinate, or assume worker names, ratings, phone numbers, prices, booking IDs, insurance policies, or live locations.
 - When you need information, ALWAYS call the appropriate tool to query the backend database.
-- Gemini thinks, backend verifies, database provides the truth.
+- AI thinks, backend verifies, database provides the truth.
 - Currency is Indian Rupees (${RUPEE}). Always format prices as ${RUPEE}450.
 - When someone describes a problem ("fan spark ho raha hai", "water leakage", "room paint karna hai"), use find_workers or get_nearby_workers to find real verified workers and recommend them with real rating and starting price.
 - Natural Language & Multilingual:
@@ -773,7 +773,7 @@ function fallbackReply(message, user = null, actionsCollector = []) {
 }
 
 /* ------------------------------------------------------------------ *
- * Gemini 2.5 Flash Function-Calling Engine (Two-Stage Execution)
+ * Alternative Gemini Function-Calling Engine (Two-Stage Execution)
  * ------------------------------------------------------------------ */
 
 async function callGemini(history, user) {

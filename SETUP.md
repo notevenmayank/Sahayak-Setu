@@ -72,11 +72,11 @@ this is what signs login tokens, so it should not stay as the placeholder:
 ```
 PORT=4000
 JWT_SECRET=paste-a-long-random-string-here
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4o-mini
+GROQ_API_KEY=
+GROQ_MODEL=qwen/qwen3.8-27b
 ```
 
-Leave `OPENAI_API_KEY` blank for now. Section 6 covers turning on real AI.
+Leave `GROQ_API_KEY` blank for now. Section 6 covers turning on real AI.
 
 ## 4. Create the database and demo data (one time)
 
@@ -145,17 +145,19 @@ Without a key it uses a rule-based brain that reads your live database, so it ca
 still name real workers and quote real prices. That means your demo never breaks
 because of an expired key or no wifi.
 
-To get true conversational answers, create a key at
-[platform.openai.com/api-keys](https://platform.openai.com/api-keys), add credit
-to the account, then paste the key into `.env`:
+To get true conversational answers powered by Groq Cloud ultra-fast inference, create a free API key at
+[console.groq.com/keys](https://console.groq.com/keys), then paste the key into `.env`:
 
 ```
-OPENAI_API_KEY=sk-your-key-here
+GROQ_API_KEY=gsk_your_key_here
+GROQ_MODEL=qwen/qwen3.8-27b
 ```
 
 Restart the server. The startup banner will change from `offline fallback` to
-`OpenAI (gpt-4o-mini)`. If OpenAI ever errors or times out, it silently falls
+`Groq (qwen3.8-27b)`. If Groq ever errors or times out, it silently falls
 back to the rule-based reply rather than showing the user an error.
+
+*(Google Gemini is also supported if you prefer: set `GEMINI_API_KEY` and `GEMINI_MODEL=gemini-1.5-flash`).*
 
 **Never commit your key.** `server/.gitignore` already excludes `.env`.
 
@@ -173,7 +175,7 @@ back to the rule-based reply rather than showing the user an error.
 - `routes/bookings.js` — time slots, create booking, change status.
 - `routes/admin.js` — stats, analytics, verify/suspend workers, audit log.
 - `routes/chat.js` — the chat endpoint, with a rate limit.
-- `services/ai.js` — the AI prompt, the fallback brain, the OpenAI call.
+- `services/ai.js` — the AI prompt, the fallback brain, the Groq / Gemini call.
 - `middleware/auth.js` — checks login tokens and roles.
 
 **New frontend files**:
@@ -258,7 +260,7 @@ http://localhost:4000 instead.
 Windows, installing Node.js with the "Tools for Native Modules" checkbox ticked
 fixes it. Re-run `npm install` afterwards.
 
-**Chat says "offline assistant"** — expected when `OPENAI_API_KEY` is blank. See
+**Chat says "offline assistant"** — expected when `GROQ_API_KEY` is blank. See
 section 6.
 
 **You changed something and want a clean slate** — `npm run reset` rebuilds the

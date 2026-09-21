@@ -31,14 +31,14 @@
 
 **Sahayak Setu** is a decentralized, cooperative-style platform designed to connect verified local gig workers (electricians, plumbers, cleaners, carpenters, painters, drivers) with customers. Unlike extractive gig platforms, Sahayak Setu treats service workers as cooperative stakeholders, enforcing fair wages, transparent tariffs, operational fatigue prevention, and micro-insurance safety nets.
 
-This release upgrades the platform with **Gemini AI function calling**, database-grounded responses, **real-time authorization-protected worker tracking**, **complaint/demand heatmaps**, **Worker Suraksha micro-insurance**, and a **one-touch Emergency SOS workflow**.
+This release upgrades the platform with **Groq Cloud AI function calling** (running `qwen/qwen3.8-27b`), database-grounded responses, **real-time authorization-protected worker tracking**, **complaint/demand heatmaps**, **Worker Suraksha micro-insurance**, and a **one-touch Emergency SOS workflow**.
 
 ---
 
 ## ✨ Key Features
 
-### 1. 🤖 Gemini AI Grounded Assistant
-- **AI Brain**: Integrated with the official Google Gen AI SDK (`@google/genai`) running `gemini-3.6-flash`.
+### 1. 🤖 Groq Cloud AI Grounded Assistant
+- **AI Brain**: Powered by **Groq Cloud** ultra-fast inference running `qwen/qwen3.8-27b` with native function calling.
 - **Database Grounding (12 Tools)**: The AI model never executes arbitrary SQL or hallucinates entities. It calls allowlisted backend functions (`find_workers`, `get_services`, `get_my_bookings`, `check_worker_availability`, etc.) that query SQLite server-side.
 - **Multilingual Support**: Communicates fluently in English, Hindi, and Hinglish.
 - **Interactive Action Pills**: Renders direct booking shortcuts (`[Book Worker]`, `[View Profile]`, `[Track Worker]`) inside assistant replies.
@@ -93,8 +93,8 @@ This release upgrades the platform with **Gemini AI function calling**, database
 ├─────────────────┼──────────────────────────────────────┤
 │ Database        │ SQLite via better-sqlite3 (WAL Mode) │
 ├─────────────────┼──────────────────────────────────────┤
-│ AI Engine       │ Google Gen AI SDK (@google/genai)    │
-│                 │ Gemini 3.6 Flash (Function Calling)  │
+│ AI Engine       │ Groq Cloud Fast Inference API        │
+│                 │ Qwen 3.8 27B / 12 Grounded DB Tools  │
 └─────────────────┴──────────────────────────────────────┘
 ```
 
@@ -147,7 +147,7 @@ Sahayak Setu/
     │   ├── safety.js             # SOS, insurance, breaks, and demand insights
     │   └── workers.js            # Worker directory and listing management
     ├── services/
-    │   ├── ai.js                 # Gemini 3.6 Flash engine & 12 grounding tools
+    │   ├── ai.js                 # Groq Cloud AI engine & 12 grounding tools
     │   └── workerSafety.js       # Operational fatigue & safety score algorithm
     └── tests/
         ├── account.test.js       # Profile and cancellation test suite (73 tests)
@@ -184,10 +184,10 @@ Open `server/.env` and configure your settings:
 ```env
 PORT=4000
 JWT_SECRET=your_long_random_jwt_secret_key_here
-GEMINI_API_KEY=your_gemini_api_key_from_google_ai_studio
-GEMINI_MODEL=gemini-3.6-flash
+GROQ_API_KEY=your_groq_api_key_from_console_groq_com
+GROQ_MODEL=qwen/qwen3.8-27b
 ```
-*(Note: If `GEMINI_API_KEY` is left blank, the app runs smoothly using the offline fallback assistant).*
+*(Note: If `GROQ_API_KEY` is left blank, the app runs smoothly using the offline fallback assistant; Google Gemini is also supported via `GEMINI_API_KEY`).*
 
 ### Step 3: Seed the Database
 Initialize tables and pre-populate workers, coordinates, and complaints:
@@ -213,7 +213,7 @@ The database comes pre-seeded with 3 test accounts (password for all three is **
 
 | Role | Email | Password | Key Features to Test |
 | :--- | :--- | :--- | :--- |
-| **Customer** | `customer@demo.com` | `demo1234` | • Browse verified workers<br>• Book appointments<br>• Track worker arrival via live MapLibre modal on confirmed bookings (`[DEMO]` toggle)<br>• Chat with Gemini AI assistant |
+| **Customer** | `customer@demo.com` | `demo1234` | • Browse verified workers<br>• Book appointments<br>• Track worker arrival via live MapLibre modal on confirmed bookings (`[DEMO]` toggle)<br>• Chat with Groq Cloud AI assistant |
 | **Worker** | `worker@demo.com` | `demo1234` | • Access **Worker Protection Center** (`/profile.html`)<br>• Monitor **Safety Score** & take fatigue breaks<br>• Enroll in **Suraksha Micro-Insurance** & submit claims<br>• Broadcast live GPS coordinates<br>• Trigger **🚨 Emergency SOS** |
 | **Admin** | `admin@demo.com` | `demo1234` | • Access **Admin Console** (`/admin.html`)<br>• Monitor platform revenue, active bookings, worker fatigue distribution<br>• Inspect audit logs and verify new workers |
 
@@ -231,14 +231,14 @@ npm test
 ### Test Coverage (182 / 182 Tests Passing):
 - **`api.test.js` (72 tests)**: Public endpoints, JWT auth, RBAC permissions, booking slot conflicts, rate limiting, and secret guards.
 - **`account.test.js` (73 tests)**: Profile updates, password changes, worker listing edits, availability toggles, and customer cancellations.
-- **`ecosystem.test.js` (37 tests)**: Gemini AI status, real worker GPS, authorization-protected tracking (403 verification), GeoJSON heatmap, Suraksha insurance, Emergency SOS, and worker fatigue scoring.
+- **`ecosystem.test.js` (37 tests)**: Groq AI status, real worker GPS, authorization-protected tracking (403 verification), GeoJSON heatmap, Suraksha insurance, Emergency SOS, and worker fatigue scoring.
 
 ---
 
 ## 🔒 Security Best Practices
 
-1. **API Key Isolation**: `GEMINI_API_KEY` is strictly server-side. It is never transmitted across client network requests or exposed in frontend code.
-2. **Database Integrity**: The Gemini AI assistant does not execute arbitrary SQL. All interactions pass through 12 strictly typed and verified parameterized queries.
+1. **API Key Isolation**: `GROQ_API_KEY` (and optional `GEMINI_API_KEY`) is strictly server-side. It is never transmitted across client network requests or exposed in frontend code.
+2. **Database Integrity**: The Groq AI assistant does not execute arbitrary SQL. All interactions pass through 12 strictly typed and verified parameterized queries.
 3. **Tracking Privacy**: Live worker coordinates are protected. Unauthorized users cannot inspect worker GPS feeds without an active/confirmed booking.
 4. **Credential Safety**: Passwords are encrypted using `bcryptjs` with salt rounds = 10. Passwords and hashes are stripped before returning user objects.
 5. **Static File Guard**: Direct HTTP access to `server/`, `.env`, and `data/*.db` is explicitly blocked.
@@ -247,7 +247,7 @@ npm test
 
 ## 👥 Team & Contributions
 
-- **AI Chatbot Engineer**: Gemini 3.6 Flash integration, 12 grounded tools, chat routes, action pills, and chat test verification.
+- **AI Chatbot Engineer**: Groq Cloud AI (qwen/qwen3.8-27b) integration, 12 grounded tools, chat routes, action pills, and chat test verification.
 - **Database Engineer**: SQLite schema definitions, indexes, migrations, seed datasets, and admin bootstrapping.
 - **Backend & Systems Engineer**: Express server architecture, JWT authentication/RBAC, REST API domain routes, worker safety fatigue engine, and test suites.
 - **Lead / Full-Stack Engineer**: System integration, MapLibre UI tracking, interactive documentation, and repository orchestration.
